@@ -301,9 +301,9 @@ int main(int argc, char *argv[]) {
 		//localSocket->SetAttribute("SndBufSize", UintegerValue(4096));
 
 		//Ask for ASCII and pcap traces of network traffic
-		AsciiTraceHelper asciiTraceHelper;
+		AsciiTraceHelper ascii;
 
-		// p2p.EnableAsciiAll (ascii.CreateFileStream ("tcp-large-transfer.tr"));
+		 chHelper.EnableAsciiAll (ascii.CreateFileStream ("tcp-large-transfer.tr"));
 		 chHelper.EnablePcapAll ("tcp-large-transfer"); // call VlcChannelHelper::EnablePcapAll
 
 		// Finally, set up the simulator to run.  The 1000 second hard limit is a

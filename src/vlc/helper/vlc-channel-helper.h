@@ -16,7 +16,7 @@
 
 namespace ns3 {
 
-class VlcChannelHelper : public PcapHelperForDevice, public Object{
+class VlcChannelHelper : public PcapHelperForDevice, public AsciiTraceHelperForDevice, public Object{
 public:
 	VlcChannelHelper();
 
@@ -77,6 +77,23 @@ private:
 	   * \param explicitFilename Treat the prefix as an explicit filename if true
 	   */
 	  virtual void EnablePcapInternal (std::string prefix, Ptr<NetDevice> nd, bool promiscuous, bool explicitFilename);
+
+	  /**
+	   * \brief Enable ascii trace output on the indicated net device.
+	   *
+	   * NetDevice-specific implementation mechanism for hooking the trace and
+	   * writing to the trace file.
+	   *
+	   * \param stream The output stream object to use when logging ascii traces.
+	   * \param prefix Filename prefix to use for ascii trace files.
+	   * \param nd Net device for which you want to enable tracing.
+	   * \param explicitFilename Treat the prefix as an explicit filename if true
+	   */
+	  virtual void EnableAsciiInternal (
+	    Ptr<OutputStreamWrapper> stream,
+	    std::string prefix,
+	    Ptr<NetDevice> nd,
+	    bool explicitFilename);
 };
 
 } /* namespace vlc */
