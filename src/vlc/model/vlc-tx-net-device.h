@@ -98,6 +98,10 @@ public:
 	//returns the Maximum TX power that can be transmitted
 	double GetTXPowerMax();
 
+	void SetTXpower(double val);
+
+	double GetTXpower();
+
 	//returns the average of TX Power signal
 	double GetAveragePowerSignalPower();
 
@@ -114,8 +118,8 @@ public:
 private:
 
 	std::vector<double> m_TXOpticalPower;
-
-	std::vector<double> m_signal; 
+    double m_TXpower;
+	std::vector<double> m_signal;
 	const double m_TMAX;
 	double m_semiangle;
 	double m_angleOfRadiance;

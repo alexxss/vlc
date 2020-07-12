@@ -37,6 +37,8 @@ public:
 
 	double GetChannelSNR(std::string chName);
 
+	void SetChannelSNR(std::string chName, double value);
+
 	void SetChannelParameter(std::string chName, std::string paramName,
 			double value);
 
@@ -59,7 +61,6 @@ public:
 private:
 
 	std::map<std::string, ns3::Ptr<VlcChannel> > m_channel;
-
 	ObjectFactory m_queueFactory;
 	ObjectFactory m_channelFactory;       //!< Channel Factory
 	ObjectFactory m_remoteChannelFactory;

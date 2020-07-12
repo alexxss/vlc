@@ -46,7 +46,9 @@ void print(const std::list<fr_node*> graph_nodes){
 
 /* save frequency reuse data to file */
 void save_fr_relationship(node* transmitter[]){
+    #ifdef DEBUG
     std::cout<<"Overlapping nodes relationship saved at FR_graph.dat\n";
+    #endif // DEBUG
     std::ofstream fout("FR_graph.dat");
     if(fout.is_open()){
         for(int i=0;i<g_AP_number;i++){
@@ -62,7 +64,9 @@ void save_fr_relationship(node* transmitter[]){
 
 /* save RB assignment data to file */
 void save_RB_assignment(node* transmitter[g_AP_number]){
+    #ifdef DEBUG
     std::cout<<"Resource block assignment saved at RB_assignment.dat\n";
+    #endif // DEBUG
     std::ofstream fout("RB_assignment.dat");
     if(fout.is_open()){
         for(int i=0; i<g_AP_number; i++){
@@ -182,7 +186,9 @@ void assign_rb(std::list<fr_node*> graph_nodes){
 }
 
 void frequency_reuse(node* transmitter[g_AP_number]){
+    #ifdef DEBUG
     std::cout<<"Build graph...\n";
+    #endif // DEBUG
     std::list<fr_node*> graph_nodes;
     for(int i=0; i<g_AP_number; i++){
         fr_node* tmpNode = new fr_node;
@@ -194,7 +200,9 @@ void frequency_reuse(node* transmitter[g_AP_number]){
 
     save_fr_relationship(transmitter);
 
+    #ifdef DEBUG
     std::cout<<"Assign RB...\n";
+    #endif // DEBUG
     assign_rb(graph_nodes);
 
     save_RB_assignment(transmitter);

@@ -11,7 +11,7 @@ NS_LOG_COMPONENT_DEFINE ("VlcSnr");	// define a log component with the name "Vlc
 
 NS_OBJECT_ENSURE_REGISTERED (VlcSnr);// register VlcSnr class with the TypeId system
 
-TypeId VlcSnr::GetTypeId(void)	// returns meta-information about VlcSnr class 
+TypeId VlcSnr::GetTypeId(void)	// returns meta-information about VlcSnr class
 		{ 	// including parent class, group name, constructor, and attributes
 	static TypeId tid =
 			TypeId("ns3::VlcSnr").SetParent<Object>().SetGroupName("Network").AddConstructor<
@@ -42,7 +42,7 @@ double VlcSnr::V_lambda[] = { 0.000039, 0.000120, 0.000396, 0.001210, 0.004000,
 		0.175000, 0.107000, 0.061000, 0.032000, 0.017000, 0.008210, 0.004102,
 		0.002091, 0.001047, 0.000520, 0.000249, 0.000120, 0.000060, 0.000030 };
 
-//General values for Respositvity 
+//General values for Respositvity
 double VlcSnr::Response[] = { 0.150, 0.160, 0.170, 0.190, 0.200, 0.220, 0.230,
 		0.240, 0.250, 0.260, 0.270, 0.280, 0.300, 0.320, 0.330, 0.350, 0.360,
 		0.370, 0.375, 0.380, 0.390, 0.400, 0.415, 0.420, 0.430, 0.440, 0.450,
@@ -67,7 +67,7 @@ VlcSnr::~VlcSnr() {
 	NS_LOG_FUNCTION(this);
 }
 
-// sets upper and lower bound wavelength 
+// sets upper and lower bound wavelength
 void VlcSnr::SetWavelength(int lower, int upper) {
 	NS_LOG_FUNCTION(this << lower << upper);
 	wavelength_lower = lower;
@@ -94,7 +94,7 @@ void VlcSnr::SetReceivedPower(double p) {
 // CalculateNoiseVar method calculates the noise variance using the following parameters:
 // Ib: background current [A]
 // I2: noise-bandwidth factor
-// I3: 
+// I3:
 // A: photodetector Area [m^2]
 // B: noise bandwidth
 // Tk: absolute temperature [K]
@@ -129,11 +129,13 @@ void VlcSnr::CalculateNoiseVar(double A) {
 					* (std::pow(A, 2)) * I3 * (std::pow(B, 3)) / gm);
 
 	noise_var = shot_var + thermal_var;
+	noise_var = 1e-16;
 }
 
 // caluclates the SNR value using received power, responsivity and noise variance
 void VlcSnr::CalculateSNR() {
 	NS_LOG_FUNCTION(this);
+	std::cout<<"using VlcSnr::CalculateSNR()";
 	if (noise_var != 0)
 		SNR = std::pow((Pr * res), 2) / noise_var;
 }

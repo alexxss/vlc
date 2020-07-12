@@ -7,5 +7,8 @@
 
 class algorithm {
 public:
-    void fullAlgorithm();
+    /** does the algorithm
+    * \return double total time(ms) taken from clustering to RA
+    */
+    double fullAlgorithm();
 };

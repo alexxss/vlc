@@ -44,6 +44,7 @@ void VlcChannelHelper::SetPropagationDelay(std::string channelName,
 }
 
 double VlcChannelHelper::GetChannelSNR(std::string chName) {
+    std::cout<<"Who call me?\n";
 	ns3::Ptr < VlcRxNetDevice > rx = DynamicCast < VlcRxNetDevice
 			> (m_channel[chName]->GetDevice(1));
 	this->m_channel[chName]->DoCalcPropagationLossForSignal(0);
@@ -51,6 +52,10 @@ double VlcChannelHelper::GetChannelSNR(std::string chName) {
 	double snr = this->m_channel[chName]->GetSNR();
 	rx->SetSNRForErrorModel(snr);
 	return snr;
+}
+
+void VlcChannelHelper::SetChannelSNR(std::string chName, double value){
+    this->m_channel[chName]->SetSNR(value);
 }
 
 void VlcChannelHelper::SetChannelWavelength(std::string channelName, int lower,

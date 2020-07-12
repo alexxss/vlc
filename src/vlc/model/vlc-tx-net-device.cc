@@ -160,6 +160,12 @@ void VlcTxNetDevice::EnqueueDataPacket(Ptr<Packet> p) {
 	m_channel->TransmitDataPacket(p);
 }
 
+void VlcTxNetDevice::SetTXpower(double val){
+    this->m_TXpower = val;
+}
 
+double VlcTxNetDevice::GetTXpower(){
+    return this->m_TXpower;
+}
 
 } /* namespace vlc */

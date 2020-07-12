@@ -35,7 +35,9 @@ void node::tdma_scheduling(){
         std::random_shuffle(candidate.begin(),candidate.end());
         // drop candidate items after K
         candidate.erase(candidate.begin()+K,candidate.end());
+        #ifdef DEBUG
         std::cout<<"-- Candidate: "; for(int i:candidate)std::cout<<i<<' '; std::cout<<'\n';
+        #endif // DEBUG
 
         /* try to RA */
         std::list<int> accepted = this->dynamic_resource_allocation(candidate);
@@ -54,7 +56,9 @@ void node::tdma_scheduling(){
     for(int UE_id : pool){
         this->dropRelationship(UE_id);
         node::receiver[UE_id]->dropRelationship(this->id);
+        #ifdef DEBUG
         std::cout<<"UE "<<UE_id<<" dropped from AP "<<this->id<<"\'s cluster.\n";
+        #endif // DEBUG
     }
 }
 
@@ -68,7 +72,9 @@ void node::tdma_time_allocation(bool smartMode){
     if (smartMode) {
         for (std::list<int> slot : this->time_slot_schedule){
             if (this->servedUE_cnt==0) {
+                #ifdef DEBUG
                 std::cout<<"There\'s no served UEs, but there is time slot? \n";
+                #endif // DEBUG
                 system("pause");
             }
             double t_g = g_total_time * slot.size() / this->servedUE_cnt;
@@ -104,16 +110,24 @@ void node::tdma_time_allocation(bool smartMode){
                 this->time_allocation.push_back(t_g);
             }
         } else {
+            #ifdef DEBUG
             std::cout<<"-- served UE > clustered UE! impossible. something is wrong.\n";
+            #endif // DEBUG
             exit(1);
         }
     }
 }
 
 void node::tdma(){
+    #ifdef DEBUG
     std::cout<<"\nTDMA for transmitter "<<this->id<<std::endl;
+    #endif // DEBUG
     this->tdma_scheduling();
+    #ifdef DEBUG
     this->printme(2); // print schedule
+    #endif
     this->tdma_time_allocation(true);
+    #ifdef DEBUG
     this->printme(3); // print allocated time resource
+    #endif // DEBUG
 }

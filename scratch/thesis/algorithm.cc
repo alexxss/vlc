@@ -90,9 +90,9 @@ void save_room_data(){
 
 }
 
-void algorithm::fullAlgorithm(){
+double algorithm::fullAlgorithm(){
 
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point beginTime = std::chrono::steady_clock::now();
     /*-------------initialization----------------*/
 
     // generate AP node
@@ -114,9 +114,9 @@ void algorithm::fullAlgorithm(){
     /*-----------calculate channel---------------*/
     calculate_all_channel();
 
-    std::cout<<"-----------------CLUSTERING------------------\n";
+//    std::cout<<"-----------------CLUSTERING------------------\n";
     /*---- for each UE, send request to APs if channel > threshold ----*/
-    std::cout<<"1. UE->AP (channel threshold="<<g_channel_threshold<<")\n";
+//    std::cout<<"1. UE->AP (channel threshold="<<g_channel_threshold<<")\n";
     for(int i=0;i<node::UE_number;i++){
         // check all APs, if channel > threshold send request
         for(int j=0; j<g_AP_number; j++){
@@ -126,7 +126,7 @@ void algorithm::fullAlgorithm(){
     }
 
     /*---- for each AP, send request to UEs if distance < threshold ----*/
-    std::cout<<"2. UE<-AP (distance threshold="<<g_distance_threshold<<")\n";
+//    std::cout<<"2. UE<-AP (distance threshold="<<g_distance_threshold<<")\n";
     for(int i=0; i<g_AP_number; i++){
         // check all UEs, if distance<threshold send request
         for(int j=0; j<node::UE_number; j++){
@@ -135,17 +135,17 @@ void algorithm::fullAlgorithm(){
         }
     }
 
-    std::cout<<"3. Confirmation\n";
+//    std::cout<<"3. Confirmation\n";
     both_sides_connect();
 
     for(node* n : node::transmitter){
         n->NOMA_sort_UE_desc();
     }
 
-    std::cout<<"---------------FREQUENCY REUSE---------------\n";
+//    std::cout<<"---------------FREQUENCY REUSE---------------\n";
     frequency_reuse(node::transmitter);
 
-    std::cout<<"-------------------TDMA----------------------\n";
+//    std::cout<<"-------------------TDMA----------------------\n";
     for(node* n : node::transmitter){
         n->tdma();
     }
@@ -154,13 +154,14 @@ void algorithm::fullAlgorithm(){
     save_finalClusterRelationship();
     save_throughputUE();
 
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    std::cout<<"\nResource Allocation complete. Total time taken = "
-             << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "ms = "
-             << (double) std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()/60000 << "min\n";
+    std::chrono::steady_clock::time_point endTime = std::chrono::steady_clock::now();
+    std::cout<<"\nResource Allocation complete. \nTotal time taken = "
+             << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - beginTime).count() << "ms = "
+             << (double) std::chrono::duration_cast<std::chrono::milliseconds>(endTime - beginTime).count()/1000 <<" s = "
+             << (double) std::chrono::duration_cast<std::chrono::milliseconds>(endTime - beginTime).count()/60000 << "min\n";
     double sum_throughput = 0.0;
     for(node* n : node::receiver) if (!n) break; else sum_throughput += n->sum_throughput;
-    std::cout<<"System sum throughput = "<<sum_throughput<<"Mbps\n";
+    std::cout<<"Achievable sum throughput = "<<sum_throughput<<"Mbps\n";
 
     /*--------- create solution struct to return ---------------*/
     /* [1] location data */
@@ -168,5 +169,18 @@ void algorithm::fullAlgorithm(){
     /* [3] resource block */
     /* [4] mod scheme & power */
 
-    return;
+    for(node* nAP : node::transmitter)
+        nAP->calculateSINR();
+
+    #ifdef DEBUG
+    std::cout<<"SINR matrix\n";
+    for(int APid = 0; APid<g_AP_number; APid++){
+        for(int UEid=0; UEid<node::UE_number; UEid++){
+            std::cout<<node::SINR[APid][UEid]<<'\t';
+        }
+        std::cout<<'\n';
+    }
+    #endif // DEBUG
+
+    return (double)std::chrono::duration_cast<std::chrono::milliseconds>(endTime-beginTime).count();
 }

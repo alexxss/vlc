@@ -109,15 +109,16 @@ double VlcChannel::DoCalcPropagationLossForSignal(int timeInstant) {
 	NS_LOG_FUNCTION(this);
 	ns3::Ptr < VlcTxNetDevice > first = ns3::DynamicCast < VlcTxNetDevice> (this->GetDevice(0));
 	ns3::Ptr < VlcRxNetDevice > second = ns3::DynamicCast < VlcRxNetDevice> (this->GetDevice(1));
-	double pMax = *std::max_element(first->GetTXOpticalPowerSignal().begin(),first->GetTXOpticalPowerSignal().end());
-	double pMin = *std::min_element(first->GetTXOpticalPowerSignal().begin(),first->GetTXOpticalPowerSignal().end());
-	double dutyCycle = second->GetAlpha();
-	double pAvg = second->GetErrorModel()->GetAveragePower(pMax,pMin,dutyCycle);
-	double loss = m_loss->CalcRxPower(pAvg,first->GetMobilityModel(), second->GetMobilityModel());
+//	double pMax = *std::max_element(first->GetTXOpticalPowerSignal().begin(),first->GetTXOpticalPowerSignal().end());
+//	double pMin = *std::min_element(first->GetTXOpticalPowerSignal().begin(),first->GetTXOpticalPowerSignal().end());
+//	double dutyCycle = second->GetAlpha();
+//	double pAvg = second->GetErrorModel()->GetAveragePower(pMax,pMin,dutyCycle);
+//	double loss = m_loss->CalcRxPower(pAvg,first->GetMobilityModel(), second->GetMobilityModel());
+    double chGain = first->GetTXGain();
+    double pwr = first->GetTXpower();
+	m_SNR->SetReceivedPower(std::pow(chGain,2) * pwr);
 
-	m_SNR->SetReceivedPower(loss);
-
-	return loss;
+	return std::pow(chGain,2) * pwr;
 }
 
 double VlcChannel::GetDistance(ns3::Ptr<ns3::MobilityModel> aTX,
@@ -168,8 +169,13 @@ double VlcChannel::GetSNR() const {	// returns the signal-to-noise ratio (SNR)
 	ns3::Ptr < VlcRxNetDevice > rx = DynamicCast < VlcRxNetDevice
 			> (this->GetDevice(1));
 	this->m_SNR->CalculateNoiseVar(rx->GetPhotoDetectorArea());
-	m_SNR->CalculateSNR();
-	return this->m_SNR->GetSNR();
+//	m_SNR->CalculateSNR();
+//	return this->m_SNR->GetSNR();
+    return this->m_snr_val;
+}
+
+void VlcChannel::SetSNR(double snr){
+    this->m_snr_val = snr;
 }
 
 void VlcChannel::SetAveragePower(double power) {
@@ -208,14 +214,13 @@ bool VlcChannel::TransmitStart(Ptr<Packet> p, Ptr<VlcNetDevice> src,
 
 	m_delay = CreateObject<ConstantSpeedPropagationDelayModel>();
 
-	Time m_delayTime = m_delay->GetDelay(tx->GetMobilityModel(),
-			rx->GetMobilityModel());
+	Time m_delayTime = m_delay->GetDelay(tx->GetMobilityModel(), rx->GetMobilityModel());
 
 	Simulator::ScheduleWithContext(m_link[id].m_dst->GetNode()->GetId(),
 	txTime + m_delayTime, &VlcNetDevice::Receive, m_link[id].m_dst, p);
 
 	// Call the tx anim callback on the net device
-	m_txrxVlcChannel(p, src, m_link[id].m_dst, txTime, txTime + m_delayTime); 
+	m_txrxVlcChannel(p, src, m_link[id].m_dst, txTime, txTime + m_delayTime);
 
 	return true;
 }
@@ -230,17 +235,18 @@ void VlcChannel::TransmitDataPacket(Ptr<Packet> p) {
 	ns3::Ptr < VlcRxNetDevice > rx = DynamicCast < VlcRxNetDevice> (this->GetDevice(1));
 
 	rx->GetErrorModel()->SetSNR(this->GetSNR()); //for each transmission event calculate the SNR and set it in error model.
-	double distance = this->GetDistance(tx->GetMobilityModel(),	rx->GetMobilityModel());
+//	double distance = this->GetDistance(tx->GetMobilityModel(),	rx->GetMobilityModel());
 	ns3::Ptr < ns3::VlcErrorModel > rxErrorModel = rx->GetErrorModel();
 
-	double erRate = rxErrorModel->CalculateErrorRate();
+//	double erRate = rxErrorModel->CalculateErrorRate();
+    double erRate = 0.00001;
 	int size = p->GetSize();
 	double packetErrorRate = 1.0 - std::pow((1 - erRate), size);
 
 	std::ofstream pers;
 	pers.open("packetErrorRateFile.txt", std::ios_base::app);
-	pers << distance << "\t" << packetErrorRate << std::endl;
-//	std::cout << distance << "\t" << packetErrorRate << std::endl;
+	pers << "\t" << packetErrorRate << std::endl;
+//	std::cout << "\t" << packetErrorRate << std::endl;
 	//bool isCorrupt = rxErrorModel->CorruptPacket(p, erRate);
 	bool isCorrupt = rxErrorModel->CorruptPacket(p, erRate);
 	//std::cout << packetErrorRate<< std::endl;

@@ -42,7 +42,7 @@ public:
 
 	ns3::Ptr<ns3::PropagationDelayModel> GetPropagationDelayModel(); //returns the propagation delay model of the channel
 
-	void SetPropagationDelay(double delay); 
+	void SetPropagationDelay(double delay);
 
 	double GetDistance(); //returns the distance after computing the distance using the mobility models of TX and RX
 
@@ -70,6 +70,8 @@ public:
 
 	double GetSNR() const;		// returns the signal-to-noise ratio (SNR)
 
+	void SetSNR(double snr);
+
 	void SetElectricNoiseBandWidth(double b);	// sets the noise bandwidth
 
 	double GetNoiseBandwidth();	//return the noise bandwidth
@@ -81,9 +83,9 @@ public:
 
 	void TransmitDataPacket(Ptr<Packet> p); //starts the transmission of data packets.
 
-	void EnqueueDataPacketAfterCorruption(); 
+	void EnqueueDataPacketAfterCorruption();
 
-	void Attach(Ptr<VlcNetDevice> device); 
+	void Attach(Ptr<VlcNetDevice> device);
 
 private:
 	ns3::Ptr<ns3::PropagationLossModel> m_loss;
@@ -95,6 +97,8 @@ private:
 	double m_AvgPower;
 
 	ns3::Ptr<ns3::VlcSnr> m_SNR;
+
+	double m_snr_val;
 
 	uint32_t m_nDevices; //number of devices.
 

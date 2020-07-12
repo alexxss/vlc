@@ -15,7 +15,7 @@ namespace ns3 {
 NS_LOG_COMPONENT_DEFINE ("VlcErrorModel");// define a log component with the name "VlcErrorModel"
 NS_OBJECT_ENSURE_REGISTERED (VlcErrorModel);// register VlcErrorModel class with the TypeId system
 
-TypeId VlcErrorModel::GetTypeId(void)// returns meta-information about VlcErrorModel class 
+TypeId VlcErrorModel::GetTypeId(void)// returns meta-information about VlcErrorModel class
 		{ 	// including parent class, group name, constructor, and attributes
 	static TypeId tid =
 			TypeId("ns3::VlcErrorModel").SetParent<RateErrorModel>().SetGroupName(
@@ -192,7 +192,7 @@ double VlcErrorModel::CalculateBER(void) {
 	double Q = 0.5 * erfc(x / std::sqrt(2));
 	SetRate(Q);	// call SetRate method in parent class RateErrorModel to set m_rate to BER value
 	SetUnit (ERROR_UNIT_BIT);
-	return Q;
+	return 1e-5;
 }
 
 // DoCorrupt method determines if the packet is corrupted according to the error model used
@@ -208,7 +208,7 @@ bool VlcErrorModel::IsCorrupt(Ptr<Packet> p) {
 		// computes pkt error rate from symbol error rate
 		double symbol_size = log2(mod_order);	// symbol size in bits
 		double symbols_per_pkt = static_cast<double>(8 * p->GetSize())/ symbol_size; // no. of symbols per packet
-		// Compute pkt error rate by finding the complement of the probablility 
+		// Compute pkt error rate by finding the complement of the probablility
 		// that a packets is not corrupted
 		// = (1 - the probability that all symbols in pkt are not corrupted)
 		double per = 1 - std::pow(1.0 - GetRate(), symbols_per_pkt);

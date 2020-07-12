@@ -119,6 +119,51 @@ void node::dropRelationship(const int& nodeId)
         this->OnOff = false;
 }
 
+double node::calculateSINR(const int& UEid, const double& myPwr, const double& prevUEpwr){
+    int APid = this->id;
+    double signal = myPwr * node::channel[APid][UEid] * node::channel[APid][UEid];
+    double IntraCI = prevUEpwr * node::channel[APid][UEid] * node::channel[APid][UEid];
+    double AWGN = g_total_bandwidth * g_N_0;
+    double ICI = 0.0;
+    for(int f=0;f<g_AP_number;f++){
+        if (f==APid) continue;
+        if (this->get_resource_block() != node::transmitter[f]->get_resource_block()) continue;
+        ICI += node::transmitter[f]->calculate_ICI(UEid);
+    }
+    double SINR = signal / (IntraCI + AWGN + ICI);
+    return SINR;
+}
+
+void node::calculateSINR(){
+    for (std::list<int> slot : this->time_slot_schedule){
+        double prevUEpwr = 0.0;
+        for(int UEid : slot){
+            // find UEid's allocated power
+            double pwr = 0.0;
+            for (UE_scheme sch : this->mod_scheme_assignment) {
+                if (sch.UE_id==UEid) {
+                    pwr = sch.modulation_scheme->required_power;
+                    break;
+                }
+            }
+
+            double SINR = this->calculateSINR(UEid, pwr, prevUEpwr);
+            node::SINR[this->id][UEid] = SINR;
+
+            prevUEpwr += pwr;
+        }
+    }
+}
+
+double node::getRequiredPower(const int& UEid){
+    for (UE_scheme sch : this->mod_scheme_assignment) {
+        if (sch.UE_id==UEid) {
+            return sch.modulation_scheme->required_power;
+        }
+    }
+    return 0.0;
+}
+
 void node::fakesend(node* destNode){
     std::cout<<this->id<<" send to "<<destNode->id<<std::endl;
     destNode->fakereceive(this);

@@ -128,14 +128,14 @@ int main(int argc, char *argv[]) {
 		NodeContainer n1n2;
 		n1n2.Add(n0n1.Get(1));
 		n1n2.Create(1);
-		
+
 		MobilityHelper mobility;
 		Ptr < ListPositionAllocator > m_listPosition = CreateObject<
 				ListPositionAllocator>();
 		m_listPosition->Add(Vector(250.0, 500.0, 0.0));
 		m_listPosition->Add(Vector(500.0, 500.0, 0.0));
 		m_listPosition->Add(Vector(750.0, 500.0, 0.0));
-		
+
 		mobility.SetPositionAllocator(m_listPosition);
 		mobility.SetMobilityModel("ns3::VlcMobilityModel");
 
@@ -206,7 +206,7 @@ int main(int argc, char *argv[]) {
 		*************************************************************************************/
 		devHelperVPPM.SetReceiverParameter("THE_RECEIVER2", "SetModulationScheme",VlcErrorModel::PSK4);
 		//devHelperVPPM.SetReceiverParameter("THE_RECEIVER2", "DutyCycle", 0.85);//Dutycycle is only valid for VPPM
-		
+
 		VlcChannelHelper chHelper;
 		chHelper.CreateChannel("THE_CHANNEL1");
 		chHelper.SetPropagationLoss("THE_CHANNEL1", "VlcPropagationLoss");
@@ -217,7 +217,7 @@ int main(int argc, char *argv[]) {
 		chHelper.SetChannelParameter("THE_CHANNEL1", "BAND_FACTOR_NOISE_SIGNAL",Band_factor_Noise_Signal );
 		chHelper.SetChannelWavelength("THE_CHANNEL1", 380, 780);
 		chHelper.SetChannelParameter("THE_CHANNEL1", "ElectricNoiseBandWidth",3 * 1e5);
-		
+
 		chHelper.CreateChannel("THE_CHANNEL2");
 		chHelper.SetPropagationLoss("THE_CHANNEL2", "VlcPropagationLoss");
 		chHelper.SetPropagationDelay("THE_CHANNEL2", 2);
@@ -227,7 +227,7 @@ int main(int argc, char *argv[]) {
 		chHelper.SetChannelParameter("THE_CHANNEL2", "BAND_FACTOR_NOISE_SIGNAL",Band_factor_Noise_Signal);
 		chHelper.SetChannelWavelength("THE_CHANNEL2", 380, 780);
 		chHelper.SetChannelParameter("THE_CHANNEL2", "ElectricNoiseBandWidth",3 * 1e5);
-		
+
 		// And then install devices and channels connecting our topology.
 		NetDeviceContainer dev0 = chHelper.Install(n0n1.Get(0), n0n1.Get(1),
 				&devHelperVPPM, &chHelper, "THE_TRANSMITTER1", "THE_RECEIVER1",
@@ -236,21 +236,21 @@ int main(int argc, char *argv[]) {
 		NetDeviceContainer dev1 = chHelper.Install(n1n2.Get(0), n1n2.Get(1),
 				&devHelperVPPM, &chHelper, "THE_TRANSMITTER2", "THE_RECEIVER2",
 				"THE_CHANNEL2");
-		
+
 		// Now add ip/tcp stack to all nodes.
 		InternetStackHelper internet;
 		internet.InstallAll();
-		
+
 		// Later, we add IP addresses.
 		Ipv4AddressHelper ipv4;
 		ipv4.SetBase("10.1.3.0", "255.255.255.0");
 		ipv4.Assign(dev0);
 		ipv4.SetBase("10.1.2.0", "255.255.255.0");
 		Ipv4InterfaceContainer ipInterfs = ipv4.Assign(dev1);
-		
+
 		// and setup ip routing tables to get total ip-level connectivity.
  		Ipv4GlobalRoutingHelper::PopulateRoutingTables();
-		
+
 		///////////////////////////////////////////////////////////////////////////
 		// Simulation 1
 		//
@@ -264,17 +264,17 @@ int main(int argc, char *argv[]) {
 		// Create a packet sink to receive these packets on n2...
 		PacketSinkHelper sink("ns3::TcpSocketFactory",
 				InetSocketAddress(Ipv4Address::GetAny(), servPort));
-		
+
 		ApplicationContainer apps = sink.Install(n1n2.Get(1));
-		
+
 		devHelperVPPM.SetTrasmitterPosition("THE_TRANSMITTER1", 0.0, 0.0, 0.0);
 		devHelperVPPM.SetTrasmitterPosition("THE_TRANSMITTER2", 0.0, 0.0, 0.0);
-		
+
 		devHelperVPPM.SetReceiverPosition("THE_RECEIVER1", 0.0, 0.0, dist);
 		devHelperVPPM.SetReceiverPosition("THE_RECEIVER2", 0.0, 0.0, dist);
 
 		apps.Start(Seconds(0.0));
-		apps.Stop(Seconds(4.0));
+		apps.Stop(Seconds(10.0));
 		// Create a source to send packets from n0.  Instead of a full Application
 		// and the helper APIs you might see in other example files, this example
 		// will use sockets directly and register some socket callbacks as a sending
@@ -309,7 +309,7 @@ int main(int argc, char *argv[]) {
 		// failsafe in case some change above causes the simulation to never end
 		AnimationInterface anim("visible-light-communication.xml");
 
-		Simulator::Stop(Seconds(5.0));
+		Simulator::Stop(Seconds(11.0));
 		Simulator::Run();
 
 		double throughput = ((Received.back() * 8)) / theTime.back(); //goodput calculation
@@ -355,28 +355,28 @@ void StartFlow(Ptr<Socket> localSocket, Ipv4Address servAddress,
 void WriteUntilBufferFull(Ptr<Socket> localSocket, uint32_t txSpace) {
 	//NS_LOG_UNCOND("helooooooooooooooooo WriteUntilBufferFull");
 	while (currentTxBytes < totalTxBytes && localSocket->GetTxAvailable() > 0) {
-		
+
 		uint32_t left = totalTxBytes - currentTxBytes;
 		uint32_t dataOffset = currentTxBytes % writeSize;
 		uint32_t toWrite = writeSize - dataOffset;
 		toWrite = std::min (toWrite, left);
 		toWrite = std::min (toWrite, localSocket->GetTxAvailable ());
-		
+
 		Ptr<Packet> p = Create<Packet>(&data[dataOffset], toWrite);
 		Ptr<Node> startingNode = localSocket->GetNode();
 		Ptr<VlcTxNetDevice> txOne = DynamicCast<VlcTxNetDevice>(startingNode->GetDevice(0) );
 		txOne->EnqueueDataPacket(p);
-      
+
 		int amountSent = localSocket->Send (&data[dataOffset], toWrite, 0);
 		if(amountSent < 0)
 		{
 			// we will be called again when new tx space becomes available.
 			return;
 		}
-		
+
 		currentTxBytes += amountSent;
 	}
-	
+
 	localSocket->Close();
 }
 

@@ -237,6 +237,7 @@ ns3::Ptr<ns3::VlcErrorModel> VlcRxNetDevice::GetErrorModel() {
 void VlcRxNetDevice::EnqueueDataPacketAfterCorruption(Ptr<Packet> p,
 		bool corruptFlag) {
 	NS_LOG_FUNCTION(this<<p<<corruptFlag);
+//	std::cout<<"Node mid "<<this->GetNode()->GetId()<<" received packet ("<<p->GetSize()<<" bytes)\n";
 	this->dataPool.push_back(p);
 	this->packetCorruptionState.push_back(corruptFlag);
 }
@@ -244,12 +245,14 @@ void VlcRxNetDevice::EnqueueDataPacketAfterCorruption(Ptr<Packet> p,
 int VlcRxNetDevice::ComputeGoodPut() {
 	NS_LOG_FUNCTION(this);
 	int goodPacketSize = 0;
+	int goodPacketNum = 0;
 	for (uint32_t i = 0; i < this->dataPool.size(); i++) {
 		if (!this->packetCorruptionState.at(i)) {
 			goodPacketSize += this->dataPool.at(i)->GetSize();
+			goodPacketNum ++;
 		}
 	}
-
+//    std::cout<<"Good packet "<<goodPacketNum<<" out of "<<this->dataPool.size()<<"\n";
 	return goodPacketSize;
 
 }

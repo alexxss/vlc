@@ -16,8 +16,8 @@ constexpr double g_AP_height = 2.5;
 constexpr double g_UE_height = 0.85;
 
 constexpr int g_UE_max = 70; // range 10-70 step 10
-constexpr int g_AP_number = 9; // should be 8*8=64
-constexpr int g_AP_per_row = 3;
+constexpr int g_AP_number = 64; // should be 8*8=64
+constexpr int g_AP_per_row = 8;
 
 constexpr double g_channel_threshold = 0.000001;
 constexpr double g_distance_threshold = 5.0;

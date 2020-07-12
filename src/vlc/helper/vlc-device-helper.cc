@@ -44,6 +44,9 @@ void VlcDeviceHelper::SetTrasmitterParameter(std::string devName,
 // 		std::logic_error("Frame Size not present");
 		std::cout << "Frame Size not present" << std::endl;
 
+	} else if (paramName == "TransmitPower") {
+	    m_TXDevices[devName]->SetTXpower(value);
+//	    std::cout<<devName<<" transmit power "<< value << '\n';
 	}
 
 }

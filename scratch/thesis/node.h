@@ -109,6 +109,19 @@ public:
      */
     void dropRelationship(const int& nodeId);
 
+    /** \brief calculates and sets SINR between this (AP) and all associated UEs.
+    * SINR set in static node::SINR[][]
+    */
+    void calculateSINR();
+
+    /** \brief calculate SINR between this (AP) and UE
+    * \param UEid the id of UE node
+    * \return double SINR
+    */
+    double calculateSINR(const int& UEid, const double& myPwr, const double& prevUEpwr);
+
+    double getRequiredPower(const int& UEid);
+
     /* currently unused, just two test functions */
     void fakesend(node* destNode);
     void fakereceive(node* srcNode);
@@ -132,6 +145,7 @@ public:
     static node* transmitter[g_AP_number];
     static node* receiver[g_UE_max];
     static double channel[g_AP_number][g_UE_max];
+    static double SINR[g_AP_number][g_UE_max];
 private:
     bool OnOff; /* true = on, false = off */
     int resource_block_id;
