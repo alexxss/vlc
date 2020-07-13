@@ -98,7 +98,7 @@ std::list<mod_scheme*> ra_first_tier(const int& candidate_id){
     //std::cout<<"-- 1st Tier RA for UE "<<node_UE->id<<'\n';
     struct mod_scheme* my_mod_schemes[g_L][g_J]; // used to store mod schemes for all l and j
 
-    std::string filepath = "./log/UE_" + std::to_string(node_UE->id) + "_first_tier";
+    std::string filepath = "./log/RA/UE_" + std::to_string(node_UE->id) + "_first_tier";
     std::ofstream fout(filepath);
     if(!fout.is_open()) {
         std::cout<<"Can't Open "<<filepath<<", exiting now";
@@ -177,11 +177,15 @@ std::list<mod_scheme*> ra_first_tier(const int& candidate_id){
 
             /* only save schemes that produces sum rate within acceptable range */
             if (current_mod_scheme->sum_throughput >= node_UE->min_required_rate && current_mod_scheme->sum_throughput < g_R_max){
-                candidate_schemes.push_back(current_mod_scheme);
+                candidate_schemes.push_back(new mod_scheme(current_mod_scheme));;
             }
         }
     }
     fout.close();
+    for(int l=0;l<g_L;l++)
+        for(int j=0;j<g_J;j++)
+        delete my_mod_schemes[l][j];
+
     return candidate_schemes;
 }
 
@@ -435,7 +439,7 @@ std::list<int> node::dynamic_resource_allocation(std::vector<int>& candidate){
             /*--- save the mod scheme result ---*/
             UE_scheme curScheme;
             curScheme.UE_id = *UEid_it;
-            curScheme.modulation_scheme = *solution_it;
+            curScheme.modulation_scheme = new mod_scheme(*solution_it);
             this->mod_scheme_assignment.push_back(curScheme);
             /*--- accumulate (shannon) throughput for UE ---*/
             node::receiver[*UEid_it]->sum_throughput += (*solution_it)->sum_throughput;
@@ -445,6 +449,13 @@ std::list<int> node::dynamic_resource_allocation(std::vector<int>& candidate){
         }
         UEid_it++;
         solution_it++;
+    }
+
+    for(std::pair<int,std::list<mod_scheme*>> candidate_schs : all_candidate_mod_scheme_set){
+        for(mod_scheme* (&sch) : candidate_schs.second){
+            delete sch;
+            sch = 0;
+        }
     }
 
     /*------- randomly decide which UEs get accepted --------------

@@ -62,7 +62,7 @@ static uint32_t currentTxBytes[g_AP_number] = {0};
 static const uint32_t writeSize = 2048; //2048??? // MSS=588len+header 2byte, max payload=536
 uint8_t data[writeSize];
 
-const int max_epoch = 20;
+//const int g_max_epoch = 3;
 
 // These are for starting the writing process, and handling the sending
 // socket's notification upcalls (events).  These two together more or less
@@ -106,12 +106,21 @@ std::string makeName(const std::string& devType, const int& APid, const int& UEi
     return DeviceName;
 }
 
+void openStream(std::ofstream& ofs, const std::string &filepath, const std::ofstream::openmode &open_mode){
+    ofs.open(filepath,open_mode);
+    if (!ofs.is_open()){
+        std::cout<<"Can't open "<<filepath<<"!! Abort :(\n";
+        exit(-1);
+    }
+}
+
 /*          init node static member       */
-int node::UE_number = 0;
+int node::UE_number = 10; // default UE_number
 node* node::transmitter[g_AP_number] = {0};
 node* node::receiver[g_UE_max] = {0};
 double node::channel[g_AP_number][g_UE_max] = {0};
 double node::SINR[g_AP_number][g_UE_max] = {0};
+double algorithm::shannon = 0.0;
 
 int main(int argc, char *argv[]) {
 	// Users may find it convenient to turn on explicit debugging
@@ -121,6 +130,7 @@ int main(int argc, char *argv[]) {
 	//  LogComponentEnable("TcpLargeTransfer", LOG_LEVEL_ALL);
 
     //parameters:
+    std::string varName;
 	double PhotoDetectorArea = g_receiver_area; 	// to set the photo dectror area
 	double Band_factor_Noise_Signal = (10.0); //?
 	Config::SetDefault("ns3::TcpSocket::SegmentSize", UintegerValue (1400));
@@ -128,7 +138,11 @@ int main(int argc, char *argv[]) {
 	Config::SetDefault("ns3::TcpSocket::RcvBufSize",UintegerValue(totalTxBytes*2));
 
 	CommandLine cmd;
+	cmd.AddValue("Var_name", "UE_number, AP_load, etc", varName); // used for making output filename
+	cmd.AddValue("UE_number", "Set UE_number for current iteration" ,node::UE_number);
 	cmd.Parse(argc, argv);
+
+	std::string filepathprefix = "./log/"+varName;
 
 	// initialize the tx buffer.
 	for (uint32_t i = 0; i < writeSize; ++i) {
@@ -136,15 +150,29 @@ int main(int argc, char *argv[]) {
 		data[i] = m;
 	}
 
-  	for (node::UE_number = 10; node::UE_number<=g_UE_max; node::UE_number+=10) {
-        std::cout<<"------------------------------UE number = "<<node::UE_number<<"------------------------------\n";
-        double aveSumThroughput = 0.0;
-        double aveGoodput = 0.0;
-        double aveTime = 0.0;
-        for(int epoch=0; epoch<max_epoch; epoch++){
-            std::cout<<"\nEpoch "<<epoch<<"...";
+//  for (node::UE_number = 10; node::UE_number<=g_UE_max; node::UE_number+=10) {
+    if (node::UE_number > g_UE_max){
+        std::cout<<"UE number "<<node::UE_number<<" > UE max "<<g_UE_max<<"! Abort.\n";
+        return -1;
+    } else {
+//        std::cout<<"------------------------------UE number = "<<node::UE_number<<"------------------------------\n";
+//        double aveSumThroughput = 0.0;
+//        double aveGoodput = 0.0;
+//        double aveTime = 0.0;
+
+        for(int epoch=0; epoch<g_max_epoch; epoch++){
+//            std::cout<<"\nEpoch "<<epoch<<"...";
             algorithm Algorithm;
             double algoTime = Algorithm.fullAlgorithm();
+
+            std::ofstream timeOfs;
+            openStream(timeOfs, filepathprefix+"_time.csv", std::ofstream::app);
+            std::ofstream shannonOfs;
+            openStream(shannonOfs, filepathprefix+"_shannon.csv", std::ofstream::app);
+            timeOfs<<", "<<algoTime;
+            shannonOfs<<", "<<algorithm::shannon;
+            timeOfs.close();
+            shannonOfs.close();
 
             // Here, we will explicitly create three nodes.  The first container contains
             // nodes 0 and 1 from the diagram above, and the second one contains nodes
@@ -154,7 +182,6 @@ int main(int argc, char *argv[]) {
             allAP.Create(g_AP_number);
             NodeContainer allUE;
             allUE.Create(node::UE_number);
-
             /////////////// location for AP ///////////////
             Ptr < ListPositionAllocator > m_listPosition = CreateObject< ListPositionAllocator >();
             for(node* n : node::transmitter){
@@ -303,12 +330,14 @@ int main(int argc, char *argv[]) {
                 }
             }
 
+            #ifdef DEBUG
             //Ask for ASCII and pcap traces of network traffic
             AsciiTraceHelper ascii;
 
             chHelper.EnableAsciiAll (ascii.CreateFileStream ("./log/tcp-large-transfer.tr"));
 //            chHelper.EnablePcapAll ("./log/tcp-large-transfer"); // call VlcChannelHelper::EnablePcapAll
             chHelper.EnablePcap("./log/tcp-large-transfer",allUE);
+            #endif // DEBUG
 
     //		 netAnim is shitty as FUCK i'd rather use gnuplot if i dont need animation. or maybe im just dumb.
     //		AnimationInterface anim("../dat/visible-light-communication.xml");
@@ -329,28 +358,35 @@ int main(int argc, char *argv[]) {
                     goodput += rxHandle->ComputeGoodPut();
                 }
             }
-            goodput *= 8 * 1e-6;
-            std::cout<<"Total goodput = "<<goodput / theTime.back()<<"Mbps.\n";
+            goodput *= 8 * 1e-6 / theTime.back();
+            std::cout<<"Total goodput = "<<goodput<<"Mbps.\n";
 
-            aveGoodput += goodput/max_epoch;
-            aveSumThroughput += throughput/max_epoch;
-            aveTime += algoTime/max_epoch;
+            std::ofstream goodputOfs;
+            openStream(goodputOfs, filepathprefix+"_goodput.csv" , std::ofstream::app);
+            goodputOfs<<", "<<goodput;
+            goodputOfs.close();
+
+//            aveGoodput += goodput/g_max_epoch;
+//            aveSumThroughput += throughput/g_max_epoch;
+//            aveTime += algoTime/g_max_epoch;
 
             Simulator::Destroy();
+
 
             theTime.clear(); theTime.push_back(0);
             Received.clear(); Received.push_back(0);
             Sent.clear(); Sent.push_back(0);
 //            currentTxBytes = 0;
             memset(currentTxBytes,0,sizeof(currentTxBytes));
+            for(node* n : node::transmitter) delete n;
+            for(node* n : node::receiver) if (n) delete n;
 
-//            epoch=max_epoch;
         }
-        std::cout<<"\nAverage throughput is "<<aveSumThroughput<<"Mbps.\n";
-        std::cout<<"Average goodput is "<<aveGoodput<<"Mbps.\n";
-        std::cout<<"Average algorithm time is "<<aveTime/1000<<" seconds.\n";
-//        node::UE_number=80;
-	}
+//        std::cout<<"\nAverage throughput is "<<aveSumThroughput<<"Mbps.\n";
+//        std::cout<<"Average goodput is "<<aveGoodput<<"Mbps.\n";
+//        std::cout<<"Average algorithm time is "<<aveTime/1000<<" seconds.\n";
+	} // end of UE_number if-block
+
 }
 
 //-----------------------------------------------------------------------------
@@ -388,6 +424,7 @@ void WriteUntilBufferFull(Ptr<Socket> localSocket, uint32_t txSpace) {
 //		Ptr<VlcTxNetDevice> txOne = DynamicCast<VlcTxNetDevice>(startingNode->GetDevice(0) );
         Ptr<VlcTxNetDevice> txOne = DynamicCast<VlcTxNetDevice>(localSocket->GetBoundNetDevice());
 		txOne->EnqueueDataPacket(p);
+//		std::cout<<p->GetSize()<<'\n';
 
 //		int amountSent = localSocket->Send (&data[dataOffset], toWrite, 0);
         int amountSent = localSocket->Send(p);

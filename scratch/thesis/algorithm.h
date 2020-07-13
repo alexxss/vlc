@@ -11,4 +11,6 @@ public:
     * \return double total time(ms) taken from clustering to RA
     */
     double fullAlgorithm();
+
+    static double shannon;
 };

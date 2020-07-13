@@ -6,9 +6,10 @@ struct mod_scheme{
 	double required_power;
 	std::list<int> modes_each_layer; // mode 0 means no mod selected for that layer!!
 	mod_scheme(){};
-	mod_scheme(const mod_scheme* scheme){
+	mod_scheme(const mod_scheme* scheme){ // copy constructor
 	    this->modes_each_layer = scheme->modes_each_layer;
 	    this->sum_throughput = scheme->sum_throughput;
+	    this->required_power = scheme->required_power;
 	}
 };
 

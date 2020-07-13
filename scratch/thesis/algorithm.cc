@@ -157,11 +157,12 @@ double algorithm::fullAlgorithm(){
     std::chrono::steady_clock::time_point endTime = std::chrono::steady_clock::now();
     std::cout<<"\nResource Allocation complete. \nTotal time taken = "
              << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - beginTime).count() << "ms = "
-             << (double) std::chrono::duration_cast<std::chrono::milliseconds>(endTime - beginTime).count()/1000 <<" s = "
+             << (double) std::chrono::duration_cast<std::chrono::milliseconds>(endTime - beginTime).count()/1000 <<"s = "
              << (double) std::chrono::duration_cast<std::chrono::milliseconds>(endTime - beginTime).count()/60000 << "min\n";
     double sum_throughput = 0.0;
     for(node* n : node::receiver) if (!n) break; else sum_throughput += n->sum_throughput;
     std::cout<<"Achievable sum throughput = "<<sum_throughput<<"Mbps\n";
+    algorithm::shannon=sum_throughput;
 
     /*--------- create solution struct to return ---------------*/
     /* [1] location data */

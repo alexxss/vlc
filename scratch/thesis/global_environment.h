@@ -1,6 +1,8 @@
 #ifndef ENVIRONMENT
 #define ENVIRONMENT
 
+constexpr int g_max_epoch = 1;
+
 /*---------------------------------------------------
                 ENVIRONMENT CONSTANTS
 room size 15*15*3

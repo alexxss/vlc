@@ -5,6 +5,16 @@ This project is based on [Aldalbahias\/VLC-ns3-v3.25](https://github.com/Aldalba
 Algorithm is based on [alexxss/thesis-simulation](https://github.com/alexxss/thesis-simulation) which is an implementaion of *S. Feng, et al,* "Multiple Access Design for Ultra-Dense VLC Networks: Orthogonal vs Non-Orthogonal," *IEEE Transactions on Communications*, Vol. 67, No. 3, pp. 2218-2231, Mar. 2019.  
 Algorithm code has been modified since last commit in the above repo.  
 
+### Automation
+The script file `wafshellRun.sh` automatically repeats 20 iterations for increment of UE number from 10 to 70 (step size 10). To use the script file, under the `ns-3.25` directory, do the following:  
+```bash
+$ ./waf shell # you will now enter waf's shell
+$ ./wafshellRun.sh
+```
+Outputs will be in `ns-3.25/log` and `ns-3.25/log/RA`, be sure that these directories exist!
+> TODO: support automation of other variables such as AP load, RB number, etc.
+
+
 ## Tracing Support
 Below are general description of changes I made to support PCAP and ASCII tracing. See commit difference for details.
 ### PCAP Support

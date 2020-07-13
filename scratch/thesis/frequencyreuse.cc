@@ -206,4 +206,6 @@ void frequency_reuse(node* transmitter[g_AP_number]){
     assign_rb(graph_nodes);
 
     save_RB_assignment(transmitter);
+
+    for(fr_node* n : graph_nodes) delete n;
 }
