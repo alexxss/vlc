@@ -49,7 +49,7 @@ void save_fr_relationship(node* transmitter[]){
     #ifdef DEBUG
     std::cout<<"Overlapping nodes relationship saved at FR_graph.dat\n";
     #endif // DEBUG
-    std::ofstream fout("FR_graph.dat");
+    std::ofstream fout("./log/FR_graph.dat");
     if(fout.is_open()){
         for(int i=0;i<g_AP_number;i++){
             for(int j=i+1;j<g_AP_number;j++){
@@ -67,7 +67,7 @@ void save_RB_assignment(node* transmitter[g_AP_number]){
     #ifdef DEBUG
     std::cout<<"Resource block assignment saved at RB_assignment.dat\n";
     #endif // DEBUG
-    std::ofstream fout("RB_assignment.dat");
+    std::ofstream fout("./log/RB_assignment.dat");
     if(fout.is_open()){
         for(int i=0; i<g_AP_number; i++){
             fout<<transmitter[i]->location.first<<' '<<transmitter[i]->location.second<<' '<<transmitter[i]->get_resource_block()<<std::endl;

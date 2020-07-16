@@ -216,8 +216,8 @@ bool VlcChannel::TransmitStart(Ptr<Packet> p, Ptr<VlcNetDevice> src,
 
 	Time m_delayTime = m_delay->GetDelay(tx->GetMobilityModel(), rx->GetMobilityModel());
 
-	Simulator::ScheduleWithContext(m_link[id].m_dst->GetNode()->GetId(),
-	txTime + m_delayTime, &VlcNetDevice::Receive, m_link[id].m_dst, p);
+//	Simulator::ScheduleWithContext(m_link[id].m_dst->GetNode()->GetId(),
+//	txTime + m_delayTime, &VlcNetDevice::Receive, m_link[id].m_dst, p);
 
 	// Call the tx anim callback on the net device
 	m_txrxVlcChannel(p, src, m_link[id].m_dst, txTime, txTime + m_delayTime);
@@ -253,7 +253,9 @@ void VlcChannel::TransmitDataPacket(Ptr<Packet> p) {
 	rx->EnqueueDataPacketAfterCorruption(p, isCorrupt);
 	pers.close();
 
-	TransmitStart(p, tx, Seconds(0.1));
+//	TransmitStart(p, tx, Seconds(0.1));
+//    std::cout<<"AP "<<tx->GetNode()->GetId()<<" sending pkt "<<p->GetUid()<<" size " << p->GetSize()<<" at "<<Simulator::Now().GetSeconds()<<'\n';
+    TransmitStart(p, tx, Simulator::Now());
 }
 
 VlcChannel::~VlcChannel() {

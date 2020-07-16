@@ -54,7 +54,7 @@ NS_LOG_COMPONENT_DEFINE ("VisibleLightCommunication");
 void PrintPacketData(Ptr<const Packet> p, uint32_t size);
 
 // The number of bytes to send in this simulation.
-static const uint64_t totalTxBytes = 21440000; // 800000000 bytes = 6.4 Gb. orig is 80000
+static const uint64_t totalTxBytes = 8000; //  orig is 80000
 static uint32_t currentTxBytes[g_AP_number] = {0};
 
 // Perform series of 1040 byte writes (this is a multiple of 26 since
@@ -73,9 +73,10 @@ void StartFlow(Ptr<Socket>, Ipv4Address, uint16_t);
 
 void WriteUntilBufferFull(Ptr<Socket>, uint32_t);
 
-std::vector<double> Received(1, 0);
+//std::vector<double> Received(1, 0);
 std::vector<double> Sent(1,0);
-std::vector<double> theTime(1, 0);
+//std::vector<double> theTime(1, 0);
+uint64_t iReceived=0.0; double iTime=0.0;
 //////////////////////////////////////
 //Function to generate signals.
 std::vector<double>& GenerateSignal(int size, double dutyRatio);
@@ -83,17 +84,20 @@ std::vector<double>& GenerateSignal(int size, double dutyRatio);
 static void RxEnd(Ptr<const Packet> p) { // used for tracing and calculating throughput
 
 	//PrintPacketData(p,p->GetSize());
-//	std::cout<<"RxEnd received packet ("<<p->GetSize()<<" bytes)\n";
-
-	Received.push_back(Received.back() + p->GetSize()); // appends on the received packet to the received data up until that packet and adds that total to the end of the vector
-	theTime.push_back(Simulator::Now().GetSeconds()); // keeps track of the time during simulation that a packet is received
+	std::cout<<"Received packet "<<p->GetUid()<<" size "<<p->GetSize()<<" at "<<Simulator::Now().GetSeconds()<<'\n';
+//	Received.push_back(Received.back() + p->GetSize()); // appends on the received packet to the received data up until that packet and adds that total to the end of the vector
+//	theTime.push_back(Simulator::Now().GetSeconds()); // keeps track of the time during simulation that a packet is received
 	//NS_LOG_UNCOND("helooooooooooooooooo RxEnd");
+
+	iReceived += p->GetSize();
+	iTime = Simulator::Now().GetSeconds();
 }
 
 static void TxEnd(Ptr<const Packet> p) { // also used as a trace and for calculating throughput
 
+//	std::cout<<"Transmit packet "<<p->GetUid()<<" size "<<p->GetSize()<<" at "<<Simulator::Now().GetSeconds()<<'\n';
 	Sent.push_back(Sent.back() + p->GetSize()); // same as for the RxEnd trace
-	theTime.push_back(Simulator::Now().GetSeconds()); 	//
+//	theTime.push_back(Simulator::Now().GetSeconds()); 	//
 	//NS_LOG_UNCOND("helooooooooooooooooo TxEnd");
 }
 
@@ -115,7 +119,7 @@ void openStream(std::ofstream& ofs, const std::string &filepath, const std::ofst
 }
 
 /*          init node static member       */
-int node::UE_number = 10; // default UE_number
+int node::UE_number = 1; // default UE_number
 node* node::transmitter[g_AP_number] = {0};
 node* node::receiver[g_UE_max] = {0};
 double node::channel[g_AP_number][g_UE_max] = {0};
@@ -126,16 +130,16 @@ int main(int argc, char *argv[]) {
 	// Users may find it convenient to turn on explicit debugging
 	// for selected modules; the below lines suggest how to do this
 	//  LogComponentEnable("TcpSocketImpl", LOG_LEVEL_ALL);
-//	  LogComponentEnable("PacketSink", LOG_LEVEL_ALL);            // uncomment in original example
+//	  LogComponentEnable("PacketSink", LOG_LEVEL_DEBUG);            // uncomment in original example
 	//  LogComponentEnable("TcpLargeTransfer", LOG_LEVEL_ALL);
 
     //parameters:
     std::string varName;
 	double PhotoDetectorArea = g_receiver_area; 	// to set the photo dectror area
 	double Band_factor_Noise_Signal = (10.0); //?
-	Config::SetDefault("ns3::TcpSocket::SegmentSize", UintegerValue (1400));
-	Config::SetDefault("ns3::TcpSocket::SndBufSize",UintegerValue(totalTxBytes));
-	Config::SetDefault("ns3::TcpSocket::RcvBufSize",UintegerValue(totalTxBytes*2));
+//	Config::SetDefault("ns3::TcpSocket::SegmentSize", UintegerValue (1400));
+//	Config::SetDefault("ns3::TcpSocket::SndBufSize",UintegerValue(totalTxBytes));
+//	Config::SetDefault("ns3::TcpSocket::RcvBufSize",UintegerValue(totalTxBytes*2));
 
 	CommandLine cmd;
 	cmd.AddValue("Var_name", "UE_number, AP_load, etc", varName); // used for making output filename
@@ -164,15 +168,42 @@ int main(int argc, char *argv[]) {
 //            std::cout<<"\nEpoch "<<epoch<<"...";
             algorithm Algorithm;
             double algoTime = Algorithm.fullAlgorithm();
-
-            std::ofstream timeOfs;
-            openStream(timeOfs, filepathprefix+"_time.csv", std::ofstream::app);
-            std::ofstream shannonOfs;
-            openStream(shannonOfs, filepathprefix+"_shannon.csv", std::ofstream::app);
-            timeOfs<<", "<<algoTime;
-            shannonOfs<<", "<<algorithm::shannon;
-            timeOfs.close();
-            shannonOfs.close();
+            {/* save results to csv */
+                // algo time
+                std::ofstream timeOfs;
+                openStream(timeOfs, filepathprefix+"_time.csv", std::ofstream::app);
+                timeOfs<<", "<<algoTime;
+                timeOfs.close();
+                // total shannon
+                std::ofstream shannonOfs;
+                openStream(shannonOfs, filepathprefix+"_shannon.csv", std::ofstream::app);
+                shannonOfs<<", "<<algorithm::shannon;
+                shannonOfs.close();
+                // ave connected APs per active UE
+                int activeUE = 0, connections = 0;
+                for(node* nUE : node::receiver)
+                    if (!nUE) break;
+                    else {
+                        if (nUE->getOnOff()){
+                            activeUE ++;
+                            connections += nUE->get_connected().size();
+                        }
+                    }
+                if (activeUE>node::UE_number) {
+                    std::cout<<"ACTIVE UE > UE NUMBER! something is wrong. abort.\n";
+                    exit(1);
+                }
+                double aveConnNum = (activeUE>0) ? (double)connections/activeUE : 0.0;
+                std::ofstream aveConnNumOfs;
+                openStream(aveConnNumOfs, filepathprefix+"_aveConnNum.csv", std::ofstream::app);
+                aveConnNumOfs<<", "<<aveConnNum;
+                aveConnNumOfs.close();
+                // drop rate
+                std::ofstream dropRateOfs;
+                openStream(dropRateOfs, filepathprefix+"_dropRate.csv", std::ofstream::app);;
+                dropRateOfs<<", "<<node::UE_number-activeUE;
+                dropRateOfs.close();
+            }
 
             // Here, we will explicitly create three nodes.  The first container contains
             // nodes 0 and 1 from the diagram above, and the second one contains nodes
@@ -226,7 +257,7 @@ int main(int argc, char *argv[]) {
                     devHelperVPPM.SetTrasmitterParameter(transmitterName, "Elevation",180.0);
                     devHelperVPPM.SetTrasmitterPosition(transmitterName, nAP->location.first, nAP->location.second, g_AP_height);
                     devHelperVPPM.SetTrasmitterParameter(transmitterName, "Gain", node::channel[nAP->id][UEid]); // original example is 70
-                    devHelperVPPM.SetTrasmitterParameter(transmitterName, "DataRateInMBPS",3000); //orig 0.3
+                    devHelperVPPM.SetTrasmitterParameter(transmitterName, "DataRateInMBPS",nAP->getAchievableRate(UEid)); //orig 0.3
                     devHelperVPPM.SetTrasmitterParameter(transmitterName, "TransmitPower", nAP->getRequiredPower(UEid));
 
                     //Creating and setting properties for the first receiver.
@@ -247,6 +278,7 @@ int main(int argc, char *argv[]) {
                     ************************************************************************************/
                     devHelperVPPM.SetReceiverParameter(receiverName, "SetModulationScheme",VlcErrorModel::QAM4);
                     //devHelperVPPM.SetReceiverParameter("THE_RECEIVER1", "DutyCycle", 0.85); //Dutycycle is only valid for VPPM
+                    devHelperVPPM.SetReceiverParameter(receiverName, "DataRateInMBPS",nAP->getAchievableRate(UEid)); //orig 0.3
 
                     std::string channelName = makeName("CHANNEL",nAP->id, UEid);
                     chHelper.CreateChannel(channelName);
@@ -315,7 +347,7 @@ int main(int argc, char *argv[]) {
     //        ApplicationContainer apps = sink.Install(allUE);
 
             apps.Start(Seconds(0.0));
-            apps.Stop(Seconds(4.0));
+            apps.Stop(Seconds(6.0));
 
             /*--- set up callback trace ---*/
             for(node* nAP : node::transmitter){
@@ -323,31 +355,29 @@ int main(int argc, char *argv[]) {
                     std::string receiverName = makeName("RECEIVER",nAP->id,iUE);
                     Ptr<VlcRxNetDevice> rxPtr = devHelperVPPM.GetReceiver(receiverName);
                     rxPtr->TraceConnectWithoutContext("PhyRxEnd", MakeCallback(&RxEnd)); //traces to allow us to see what and when data is sent through the network
-
-                    std::string transmitterName = makeName("TRANSMITTER", nAP->id, iUE);
-                    Ptr<VlcTxNetDevice> txPtr = devHelperVPPM.GetTransmitter(transmitterName);
-                    txPtr->TraceConnectWithoutContext("PhyTxEnd", MakeCallback(&TxEnd));
+//
+//                    std::string transmitterName = makeName("TRANSMITTER", nAP->id, iUE);
+//                    Ptr<VlcTxNetDevice> txPtr = devHelperVPPM.GetTransmitter(transmitterName);
+//                    txPtr->TraceConnectWithoutContext("PhyTxEnd", MakeCallback(&TxEnd));
                 }
             }
 
-            #ifdef DEBUG
-            //Ask for ASCII and pcap traces of network traffic
-            AsciiTraceHelper ascii;
 
-            chHelper.EnableAsciiAll (ascii.CreateFileStream ("./log/tcp-large-transfer.tr"));
-//            chHelper.EnablePcapAll ("./log/tcp-large-transfer"); // call VlcChannelHelper::EnablePcapAll
-            chHelper.EnablePcap("./log/tcp-large-transfer",allUE);
-            #endif // DEBUG
+            //Ask for ASCII and pcap traces of network traffic
+//            AsciiTraceHelper ascii;
+//            chHelper.EnableAsciiAll (ascii.CreateFileStream ("./log/trace/tcp-large-transfer.tr"));
+//            chHelper.EnablePcapAll ("./log/trace/tcp-large-transfer"); // call VlcChannelHelper::EnablePcapAll
+//            chHelper.EnablePcap("./log/trace/tcp-large-transfer",allUE);
+
 
     //		 netAnim is shitty as FUCK i'd rather use gnuplot if i dont need animation. or maybe im just dumb.
     //		AnimationInterface anim("../dat/visible-light-communication.xml");
-
-            Simulator::Stop(Seconds(6.0));
+            Simulator::Stop(Seconds(1.5));
             Simulator::Run();
 
 //            std::cout<<"Sent "<<Sent.size()<<" segments ("<<Sent.back()<<" bytes), received "<<Received.size()<<" segments ("<<Received.back()<<" bytes).\n";
-            std::cout<<"Simulation time "<<theTime.back()<<" seconds\n";
-            double throughput = (Received.back() * 8 * 1e-6) / theTime.back(); // bps
+            std::cout<<"Simulation time "<<iTime<<" seconds\n";
+            double throughput = (iReceived * 8 * 1e-6) / iTime; // Mbps
             std::cout << "throughput value is " << throughput << "Mbps.\n";
             double goodput = 0.0;
             for(int APi = 0; APi<g_AP_number; APi++){
@@ -358,13 +388,15 @@ int main(int argc, char *argv[]) {
                     goodput += rxHandle->ComputeGoodPut();
                 }
             }
-            goodput *= 8 * 1e-6 / theTime.back();
+            goodput *= 8 * 1e-6 / iTime;
             std::cout<<"Total goodput = "<<goodput<<"Mbps.\n";
 
-            std::ofstream goodputOfs;
-            openStream(goodputOfs, filepathprefix+"_goodput.csv" , std::ofstream::app);
-            goodputOfs<<", "<<goodput;
-            goodputOfs.close();
+            {  /* save result to csv */
+                std::ofstream goodputOfs;
+                openStream(goodputOfs, filepathprefix+"_goodput.csv" , std::ofstream::app);
+                goodputOfs<<", "<<goodput;
+                goodputOfs.close();
+            }
 
 //            aveGoodput += goodput/g_max_epoch;
 //            aveSumThroughput += throughput/g_max_epoch;
@@ -373,8 +405,8 @@ int main(int argc, char *argv[]) {
             Simulator::Destroy();
 
 
-            theTime.clear(); theTime.push_back(0);
-            Received.clear(); Received.push_back(0);
+            iTime=0.0;
+            iReceived=0.0;
             Sent.clear(); Sent.push_back(0);
 //            currentTxBytes = 0;
             memset(currentTxBytes,0,sizeof(currentTxBytes));
@@ -424,7 +456,7 @@ void WriteUntilBufferFull(Ptr<Socket> localSocket, uint32_t txSpace) {
 //		Ptr<VlcTxNetDevice> txOne = DynamicCast<VlcTxNetDevice>(startingNode->GetDevice(0) );
         Ptr<VlcTxNetDevice> txOne = DynamicCast<VlcTxNetDevice>(localSocket->GetBoundNetDevice());
 		txOne->EnqueueDataPacket(p);
-//		std::cout<<p->GetSize()<<'\n';
+//		std::cout<<"AP "<<iAP<<" enqueue packet "<<p->GetUid()<<" size " << p->GetSize()<<" at "<<Simulator::Now().GetSeconds()<<'\n';
 
 //		int amountSent = localSocket->Send (&data[dataOffset], toWrite, 0);
         int amountSent = localSocket->Send(p);
@@ -438,7 +470,7 @@ void WriteUntilBufferFull(Ptr<Socket> localSocket, uint32_t txSpace) {
 		currentTxBytes[iAP] += amountSent;
 	}
 	NS_LOG_DEBUG("complete. \n");
-	localSocket->Close();
+//	localSocket->Close();
 //	std::cout<<localSocket->GetBoundNetDevice()->GetNode()->GetId()<<" called socket->Close(). "
 //             <<"Remaining "<<totalTxBytes - currentTxBytes[iAP]<<" bytes, available buffer "<<localSocket->GetTxAvailable()<<" bytes.\n";
     if (currentTxBytes[iAP]>=totalTxBytes) currentTxBytes[iAP]=0;

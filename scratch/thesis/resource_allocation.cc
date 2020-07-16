@@ -262,7 +262,7 @@ mod_scheme_combi node::ra_second_tier(const std::list<std::pair<int, std::list<m
         #ifdef DEBUG
         std::cout<<"Evaluating UE "<<candidate_scheme_set.first<<": "<<candidate_scheme_set.second.size()<<" candidate schemes\n";
         /*-- for logging */
-        std::string filepath = "./log/AP_" + std::to_string(AP_id) + "_UE_" + std::to_string(candidate_scheme_set.first) +"_second_tier";
+        std::string filepath = "./log/RA/AP_" + std::to_string(AP_id) + "_UE_" + std::to_string(candidate_scheme_set.first) +"_second_tier";
         std::ofstream fout(filepath);
         if(!fout.is_open()) {
             std::cout<<"Can't Open "<<filepath<<", exiting now";

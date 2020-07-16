@@ -14,6 +14,9 @@ $ ./wafshellRun.sh
 Outputs will be in `ns-3.25/log` and `ns-3.25/log/RA`, be sure that these directories exist!
 > TODO: support automation of other variables such as AP load, RB number, etc.
 
+### Structure
+`./wafshellRun.sh` outputs results and logs to `ns-3.25/log`.  
+single iters built in codeblocks will output results and logs to `ns-3.25/build/log`. `debug` and `release` profiles have their own respective folder for `.so``.o` files etc.  
 
 ## Tracing Support
 Below are general description of changes I made to support PCAP and ASCII tracing. See commit difference for details.

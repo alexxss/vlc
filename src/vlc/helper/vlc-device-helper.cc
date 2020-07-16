@@ -111,7 +111,15 @@ void VlcDeviceHelper::SetReceiverParameter(std::string devName,
 		m_RXDevices[devName]->SetAlpha(value);
 	} else if (paramName == "Beta") {
 		m_RXDevices[devName]->SetBeta(value);
-	}
+
+	} else if (paramName == "DataRateInMBPS") {
+		std::ostringstream strs;
+		strs << value;
+		std::string str = strs.str();
+		str = str + "Mbps";
+		DataRate drate(str);
+		m_RXDevices[devName]->SetDataRate(drate);
+    }
 
 }
 

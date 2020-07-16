@@ -11,15 +11,16 @@ done
 
 for var in {10..70..10} # ue from 10 to 70, step 10
 do
+	# (use tee so that it shows up in console AND log)
 	echo "-------------------------$varname = $var-----------------------------" | tee -a $logfile
-	printf "$var " | tee -a ./log/${varname}_goodput.csv ./log/${varname}_time.csv ./log/${varname}_shannon.csv > /dev/null
+	printf "$var " | tee -a ./log/${varname}_goodput.csv ./log/${varname}_time.csv ./log/${varname}_shannon.csv ./log/${varname}_dropRate.csv ./log/${varname}_aveConnNum.csv > /dev/null
 	for ep in {1..20} # repeat simulation 20 times
 	do
 		echo "epoch $ep"
 		# execute simulation:
-		./build/scratch/thesis/thesis --Var_name=$varname --$varname=$var >> $logfile
+		./build/release/scratch/thesis/thesis --Var_name=$varname --$varname=$var >> $logfile
 	done
-	printf "\n" | tee -a ./log/${varname}_goodput.csv ./log/${varname}_time.csv ./log/${varname}_shannon.csv > /dev/null
+	printf "\n" | tee -a ./log/${varname}_goodput.csv ./log/${varname}_time.csv ./log/${varname}_shannon.csv ./log/${varname}_dropRate.csv ./log/${varname}_aveConnNum.csv > /dev/null
 
 done
 

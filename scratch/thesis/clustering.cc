@@ -22,7 +22,7 @@ void UE_send_requests(){
 void AP_send_requests();
 
 void both_sides_connect(){
-    std::ofstream fout("AP_UE_pair.dat");
+    std::ofstream fout("./log/AP_UE_pair.dat");
     if (fout.is_open()){
         for(int i=0;i<g_AP_number;i++){
             for(int j=0; j<node::UE_number; j++){
@@ -44,5 +44,5 @@ void both_sides_connect(){
         }
         fout.close();
     } else
-        std::cout<<"Cant open file \"AP_UE_pair.dat\""<<std::endl;
+        std::cout<<"Cant open file \"./log/AP_UE_pair.dat\""<<std::endl;
 }

@@ -77,5 +77,5 @@ constexpr int g_I = 20;
 constexpr int g_L = 4;
 constexpr int g_M = 5;
 constexpr double g_BER = 0.00001;
-constexpr double g_N_0 = 0.0000000000000001;
+constexpr double g_N_0 = 1e-16;
 #endif //ENVIRONMENT

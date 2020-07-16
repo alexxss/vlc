@@ -62,6 +62,7 @@ bool node::hasRequest(const int srcNodeId){
 void node::connect(const int srcNode){
     this->receivedRequests.remove(srcNode);
     this->connected.push_back(srcNode);
+    this->OnOff = true;
 }
 
 std::list<int> node::get_connected(){
@@ -162,6 +163,19 @@ double node::getRequiredPower(const int& UEid){
         }
     }
     return 0.0;
+}
+
+double node::getAchievableRate(const int& UEid){
+    for (UE_scheme sch : this->mod_scheme_assignment){
+        if (sch.UE_id==UEid){
+            return sch.modulation_scheme->sum_throughput;
+        }
+    }
+    return 0.0;
+}
+
+bool node::getOnOff () {
+    return this->OnOff;
 }
 
 void node::fakesend(node* destNode){

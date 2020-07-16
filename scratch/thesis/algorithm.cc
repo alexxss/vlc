@@ -9,14 +9,14 @@ void save_throughputUE(){
      columns: <x> <y> <throughput>
      run in cmd: `gnuplot -p          .gnu` to view plot
     -------------------------------------------------------*/
-    std::ofstream fout("UE_throughput.dat");
+    std::ofstream fout("./log/UE_throughput.dat");
     if (fout.is_open()){
         for(node* n : node::receiver){
             if (!n) break;
               fout<<n->location.first<<' '<<n->location.second<<' '<<n->sum_throughput<<'\n';
         }
         fout.close();
-    } else std::cout<<"Can\'t open UE_throughput.dat :\(\n";
+    } else std::cout<<"Can\'t open ./log/UE_throughput.dat :\(\n";
 }
 
 void save_idleNode(){
@@ -24,23 +24,23 @@ void save_idleNode(){
      columns: <x> <y>
      run in cmd: `gnuplot -p plot_pairWithOutage.gnu` to view plot
     -------------------------------------------------------*/
-    std::ofstream fout("UE_off.dat");
+    std::ofstream fout("./log/UE_off.dat");
     if (fout.is_open()){
         for(node* n : node::receiver)
             if (!n) break;
             else if (n->get_connected().size()==0)
                 fout<<n->location.first<<' '<<n->location.second<<'\n';
         fout.close();
-    } else std::cout<<"Can\'t open UE_off.dat :\(\n";
+    } else std::cout<<"Can\'t open ./log/UE_off.dat :\(\n";
 
-    fout.open("AP_off.dat");
+    fout.open("./log/AP_off.dat");
     if (fout.is_open()){
         for(node* n : node::transmitter){
             if (n->get_connected().size()==0)
                 fout<<n->location.first<<' '<<n->location.second<<'\n';
         }
         fout.close();
-    } else std::cout<<"Can\'t open AP_off.dat :\(\n";
+    } else std::cout<<"Can\'t open ./log/AP_off.dat :\(\n";
 }
 
 void save_finalClusterRelationship(){
@@ -51,7 +51,7 @@ void save_finalClusterRelationship(){
        <empty line>
      run in cmd: `gnuplot -p plot_pairWithOutage.gnu` to view plot
     -------------------------------------------------------*/
-    std::ofstream fout("AP_UE_pairFinal.dat");
+    std::ofstream fout("./log/AP_UE_pairFinal.dat");
     if (fout.is_open()){
         for(node* AP : node::transmitter){
             for(int UEid : AP->get_connected()){
@@ -61,7 +61,7 @@ void save_finalClusterRelationship(){
             }
         }
         fout.close();
-    } else std::cout<<"Can\'t open AP_UE_pairFinal.dat :\(\n";
+    } else std::cout<<"Can\'t open ./log/AP_UE_pairFinal.dat :\(\n";
 }
 
 /**
@@ -74,13 +74,13 @@ void save_room_data(){
      columns: <node id> <x> <y>
      run in cmd: `gnuplot -p plot_room.gnu` to view plot
     -------------------------------------------------------*/
-    std::ofstream fout("UE_point.dat");
+    std::ofstream fout("./log/UE_point.dat");
     if(fout.is_open()){
         for(int i=0;i<node::UE_number;i++)
             fout<<i<<' '<<node::receiver[i]->location.first<<' '<<node::receiver[i]->location.second<<'\n';
         fout.close();
     }
-    fout.open("AP_point.dat");
+    fout.open("./log/AP_point.dat");
     if(fout.is_open()){
         for(int i=0;i<g_AP_number;i++){
             fout<<i<<' '<<node::transmitter[i]->location.first<<' '<<node::transmitter[i]->location.second<<'\n';
@@ -173,7 +173,6 @@ double algorithm::fullAlgorithm(){
     for(node* nAP : node::transmitter)
         nAP->calculateSINR();
 
-    #ifdef DEBUG
     std::cout<<"SINR matrix\n";
     for(int APid = 0; APid<g_AP_number; APid++){
         for(int UEid=0; UEid<node::UE_number; UEid++){
@@ -181,7 +180,13 @@ double algorithm::fullAlgorithm(){
         }
         std::cout<<'\n';
     }
-    #endif // DEBUG
+    std::cout<<"Shannon matrix\n";
+    for (node* nAP : node::transmitter){
+        for (int u=0; u<node::UE_number; u++){
+            std::cout<<nAP->getAchievableRate(u)<<'\t';
+        }
+        std::cout<<'\n';
+    }
 
     return (double)std::chrono::duration_cast<std::chrono::milliseconds>(endTime-beginTime).count();
 }

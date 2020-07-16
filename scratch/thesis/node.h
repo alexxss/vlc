@@ -121,6 +121,9 @@ public:
     double calculateSINR(const int& UEid, const double& myPwr, const double& prevUEpwr);
 
     double getRequiredPower(const int& UEid);
+    double getAchievableRate(const int& UEid);
+
+    bool getOnOff();
 
     /* currently unused, just two test functions */
     void fakesend(node* destNode);
@@ -136,11 +139,6 @@ public:
     */
     void printme(const int mode);
 
-    /*
-        static member to hold instances
-        // TODO (alex#3#): replace main.cpp's transmitter and receiver array with these instead
-        example usage: `node::transmitter[i]`
-    */
     static int UE_number;
     static node* transmitter[g_AP_number];
     static node* receiver[g_UE_max];
