@@ -9,6 +9,7 @@
 #include <math.h>
 #include <random>
 #include <algorithm> // std::sort
+#include <chrono> // seed
 
 node::node(int id){
     this->id = id;
@@ -19,7 +20,7 @@ node::node(int id){
     this->sum_throughput = 0.0;
     /* generate random minimum rate */
     std::uniform_real_distribution<double> unif(0.0, g_R_min);
-    std::default_random_engine re; // TODO (alex#2#): remember to seed
+    std::default_random_engine re(std::chrono::system_clock::now().time_since_epoch().count());
     this->min_required_rate = unif(re);
 }
 
@@ -30,7 +31,7 @@ node::node(int id, double x, double y){
     this->sum_throughput = 0.0;
     /* generate random minimum rate */
     std::uniform_real_distribution<double> unif(0.0, g_R_min);
-    std::default_random_engine re; // TODO (alex#2#): remember to seed
+    std::default_random_engine re(std::chrono::system_clock::now().time_since_epoch().count());
     this->min_required_rate = unif(re);
 }
 

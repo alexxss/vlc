@@ -7,6 +7,7 @@
 #include<iostream>
 #include<algorithm> // for sort
 #include<random> // for random.. duh
+#include<chrono> // seed
 
 /**
 z[i][j] = true means AP i and AP j associate to at least one same UE.
@@ -167,7 +168,7 @@ void assign_rb(std::list<fr_node*> graph_nodes){
 
     /* remaining nodes rand() for non-repeating RB */
     std::uniform_int_distribution<int> unif(0,g_frequency_reuse_factor-1);
-    std::default_random_engine re; // TODO (alex#2#): remember to seed
+    std::default_random_engine re(std::chrono::system_clock::now().time_since_epoch().count());
     while(it!=graph_nodes.end()){
         int rb_id = unif(re);
         std::list<int> rb_candidate = (*it)->get_rb_candidate();

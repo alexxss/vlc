@@ -84,7 +84,7 @@ std::vector<double>& GenerateSignal(int size, double dutyRatio);
 static void RxEnd(Ptr<const Packet> p) { // used for tracing and calculating throughput
 
 	//PrintPacketData(p,p->GetSize());
-	std::cout<<"Received packet "<<p->GetUid()<<" size "<<p->GetSize()<<" at "<<Simulator::Now().GetSeconds()<<'\n';
+//	std::cout<<"Received packet "<<p->GetUid()<<" size "<<p->GetSize()<<" at "<<Simulator::Now().GetSeconds()<<'\n';
 //	Received.push_back(Received.back() + p->GetSize()); // appends on the received packet to the received data up until that packet and adds that total to the end of the vector
 //	theTime.push_back(Simulator::Now().GetSeconds()); // keeps track of the time during simulation that a packet is received
 	//NS_LOG_UNCOND("helooooooooooooooooo RxEnd");
@@ -119,11 +119,13 @@ void openStream(std::ofstream& ofs, const std::string &filepath, const std::ofst
 }
 
 /*          init node static member       */
-int node::UE_number = 1; // default UE_number
+int node::UE_number = 10; // default UE_number
 node* node::transmitter[g_AP_number] = {0};
 node* node::receiver[g_UE_max] = {0};
 double node::channel[g_AP_number][g_UE_max] = {0};
 double node::SINR[g_AP_number][g_UE_max] = {0};
+/*         init algorithm static member         */
+bool algorithm::RBmode = false, algorithm::TDMAmode = false, algorithm::RAmode = false;
 double algorithm::shannon = 0.0;
 
 int main(int argc, char *argv[]) {
@@ -141,12 +143,20 @@ int main(int argc, char *argv[]) {
 //	Config::SetDefault("ns3::TcpSocket::SndBufSize",UintegerValue(totalTxBytes));
 //	Config::SetDefault("ns3::TcpSocket::RcvBufSize",UintegerValue(totalTxBytes*2));
 
+	string RBmode, TDMAmode, RAmode;
+
 	CommandLine cmd;
 	cmd.AddValue("Var_name", "UE_number, AP_load, etc", varName); // used for making output filename
 	cmd.AddValue("UE_number", "Set UE_number for current iteration" ,node::UE_number);
+	cmd.AddValue("RB_mode", "Set RB_mode for current iteration", RBmode);
+	cmd.AddValue("TDMA_mode", "Set TDMA_mode for current iteration", TDMAmode);
+	cmd.AddValue("RA_mode", "Set RA_mode for current iteration", RAmode);
 	cmd.Parse(argc, argv);
 
-	std::string filepathprefix = "./log/"+varName;
+	std::string filepathprefix = "./log/"+varName+"-"+RBmode+"-"+TDMAmode+"-"+RAmode;
+	algorithm::RBmode = (RBmode=="WGC") ? true:false;
+	algorithm::TDMAmode = (TDMAmode=="GA") ? true:false;
+	algorithm::RAmode = (RAmode=="HR") ? true:false;
 
 	// initialize the tx buffer.
 	for (uint32_t i = 0; i < writeSize; ++i) {
@@ -203,6 +213,17 @@ int main(int argc, char *argv[]) {
                 openStream(dropRateOfs, filepathprefix+"_dropRate.csv", std::ofstream::app);;
                 dropRateOfs<<", "<<node::UE_number-activeUE;
                 dropRateOfs.close();
+		// power
+		double sumPower = 0.0;
+		for(int iAP = 0; iAP<g_AP_number; iAP++){
+		    for(int UEid : node::transmitter[iAP]->get_connected()){
+			sumPower += node::transmitter[iAP]->getRequiredPower(UEid);
+		    }
+		}
+  	        std::ofstream powerOfs;
+		openStream(powerOfs, filepathprefix+"_power.csv", std::ofstream::app);
+		powerOfs<<", "<<sumPower;
+		powerOfs.close();
             }
 
             // Here, we will explicitly create three nodes.  The first container contains

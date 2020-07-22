@@ -12,6 +12,9 @@ $ ./waf shell # you will now enter waf's shell
 $ ./wafshellRun.sh
 ```
 Outputs will be in `ns-3.25/log` and `ns-3.25/log/RA`, be sure that these directories exist!
+output file names: `<varName>-<RBmode>-<TDMAmode>-<RAmode>_<metric>.csv`  
+example: `UE_number-WGC-GA-HR_time.csv`  
+
 > TODO: support automation of other variables such as AP load, RB number, etc.
 
 ### Structure
