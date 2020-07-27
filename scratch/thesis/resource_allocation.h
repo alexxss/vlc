@@ -29,5 +29,11 @@ struct mod_scheme_combi{
     }
 };
 
+double SINR_single_layer(const int& m);
+
+double power_required(const int& AP_id, const int& UE_id, const mod_scheme &candidate_scheme, const double &prev_UEs_power);
+
+double minPower(const int &AP_id, const int &UE_id);
+
 #define RESOURCE_ALLOCATION
 #endif // RESOURCE_ALLOCATION

@@ -142,12 +142,12 @@ double algorithm::fullAlgorithm(){
         n->NOMA_sort_UE_desc();
     }
 
-//    std::cout<<"---------------FREQUENCY REUSE---------------\n";
+//  ---------------FREQUENCY REUSE---------------
     frequency_reuse(node::transmitter);
 
-//    std::cout<<"-------------------TDMA----------------------\n";
+//  -------------------TDMA----------------------
     for(node* n : node::transmitter){
-        n->tdma();
+        n->tdma(algorithm::TDMAmode, algorithm::RAmode);
     }
 
     save_idleNode();

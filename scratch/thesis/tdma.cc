@@ -4,6 +4,21 @@
 #include <iostream>
 #include <algorithm> // random_shuffle
 
+void prune(const int& APid){
+    std::cout<<"Pruning AP "<<APid<<"...\n";
+    for(int UEid : node::transmitter[APid]->get_connected()){
+        std::cout<<"Minimum required power to serve UE "<<UEid<<" is "<< minPower(APid,UEid)<<"\n";
+        if (minPower(APid,UEid) > g_P_max){
+            node::transmitter[APid]->dropRelationship(UEid);
+            node::receiver[UEid]->dropRelationship(APid);
+            #ifdef DEBUG
+            std::cout<<", UE "<<UEid<<" dropped from AP "<<APid<<"\'s cluster.\n";
+            #endif // DEBUG
+        }
+    }
+    std::cout<<"Done.\n";
+}
+
 /*---------scheduling----------------
 1. attempt to support K UEs via RA;
    - K=min(|remaining UE|, Gamma)
@@ -13,9 +28,14 @@
 5. repeat from 1.
 -------------------------------------*/
 
-void node::tdma_scheduling(){
+void node::tdma_scheduling(bool TDMAmode, bool RAmode){
     this->servedUE_cnt = 0;
     std::list<std::list<int>> schedule;
+
+    if (TDMAmode || RAmode) {
+        prune(this->id);
+    }
+
     /* copy connected UEs into pool */
     std::list<int> pool;
     for(int i : this->get_connected()) pool.push_back(i);
@@ -40,7 +60,12 @@ void node::tdma_scheduling(){
         #endif // DEBUG
 
         /* try to RA */
-        std::list<int> accepted = this->dynamic_resource_allocation(candidate);
+        std::list<int> accepted;
+        if (RAmode)
+            accepted = this->heuristic_resource_allocation(candidate);
+        else
+            accepted = this->dynamic_resource_allocation(candidate);
+
         //std::cout<<"-- Accepted: "; for(int i:accepted)std::cout<<i<<' '; std::cout<<'\n';
 
         /* remove successful UE from pool */
@@ -118,15 +143,19 @@ void node::tdma_time_allocation(bool smartMode){
     }
 }
 
-void node::tdma(){
+void node::tdma(bool TDMAmode, bool RAmode){
     #ifdef DEBUG
     std::cout<<"\nTDMA for transmitter "<<this->id<<std::endl;
     #endif // DEBUG
-    this->tdma_scheduling();
+
+    this->tdma_scheduling(TDMAmode, RAmode);
+
     #ifdef DEBUG
     this->printme(2); // print schedule
     #endif
+
     this->tdma_time_allocation(true);
+
     #ifdef DEBUG
     this->printme(3); // print allocated time resource
     #endif // DEBUG

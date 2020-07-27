@@ -33,7 +33,9 @@ struct sort_candidate{
 
 double node::calculate_ICI(const int& UE_id){
     /*--- case: this AP has no serving UEs ---*/
-    if (this->connected.size() == 0) return 0.0;
+    if (this->connected.size() == 0) {
+        return 0.0;
+    }
 
     int order = this->get_sorting_order(UE_id);
     double channel_AP_UE = node::channel[this->id][UE_id];

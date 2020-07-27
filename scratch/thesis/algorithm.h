@@ -7,6 +7,14 @@
 
 class algorithm {
 public:
+    /**
+    mode = true: use proposed algo;
+    mode = false: use reference algo
+    */
+    static bool RBmode;
+    static bool TDMAmode;
+    static bool RAmode;
+
     /** does the algorithm
     * \return double total time(ms) taken from clustering to RA
     */

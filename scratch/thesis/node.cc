@@ -87,12 +87,12 @@ void node::NOMA_sort_UE_desc(){
 }
 
 int node::get_sorting_order (const int& UE_id) const {
-    std::list<int> sorted_UE = this->sorted_UE;
-    std::list<int>::iterator it = std::find(sorted_UE.begin(),sorted_UE.end(),UE_id);
-    if (it==sorted_UE.end()) {
+    std::list<int> sortedUEList = this->sorted_UE;
+    std::list<int>::iterator it = std::find(sortedUEList.begin(),sortedUEList.end(),UE_id);
+    if (it==sortedUEList.end()) {
         return -1; // UE_id is not in the sorted_UE list!!!
     }
-    int order = std::distance(sorted_UE.begin(),it);
+    int order = std::distance(sortedUEList.begin(),it);
     return order;
 }
 

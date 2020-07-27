@@ -143,7 +143,7 @@ int main(int argc, char *argv[]) {
 //	Config::SetDefault("ns3::TcpSocket::SndBufSize",UintegerValue(totalTxBytes));
 //	Config::SetDefault("ns3::TcpSocket::RcvBufSize",UintegerValue(totalTxBytes*2));
 
-	string RBmode, TDMAmode, RAmode;
+	std::string RBmode, TDMAmode, RAmode="HR";
 
 	CommandLine cmd;
 	cmd.AddValue("Var_name", "UE_number, AP_load, etc", varName); // used for making output filename
