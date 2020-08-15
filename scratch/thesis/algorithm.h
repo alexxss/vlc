@@ -15,6 +15,8 @@ public:
     static bool TDMAmode;
     static bool RAmode;
 
+    static int paramX;
+
     /** does the algorithm
     * \return double total time(ms) taken from clustering to RA
     */

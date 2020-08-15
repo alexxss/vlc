@@ -4,6 +4,17 @@
 #include <iostream>
 #include <algorithm> // random_shuffle
 
+/** used to sort candidate in ASCENDING order of their NOMA order... */
+struct sortByMinPower{
+    sortByMinPower(const int& AP_id){AP=node::transmitter[AP_id];};
+    const node* AP;
+    bool operator() (const int& a, const int& b){
+//        return AP->get_sorting_order(a) <= AP->get_sorting_order(b);
+        int APid = AP->id;
+        return minPower(APid, a) <= minPower(APid,b);
+    }
+};
+
 void prune(const int& APid){
     std::cout<<"Pruning AP "<<APid<<"...\n";
     for(int UEid : node::transmitter[APid]->get_connected()){
@@ -19,6 +30,40 @@ void prune(const int& APid){
     std::cout<<"Done.\n";
 }
 
+std::vector<int> chooseCandidate(const std::list<int> &pool, const int &K, const int& APid, const bool TDMAmode, int paramX){
+    std::vector<int> candidate;
+    if (!TDMAmode){
+    /*----------------------multiple access method----------------------------------------*/
+        for(int i:pool)candidate.push_back(i);
+        // shuffle candidate
+        std::random_shuffle(candidate.begin(),candidate.end());
+        // drop candidate items after K
+        candidate.erase(candidate.begin()+K,candidate.end());
+    } else {
+    /*--------------------------my method--------------------------------------------------*/
+        for(int i:pool)candidate.push_back(i);
+        // pick guaranteed admission
+        //1. sort by channel gain
+        std::cout<<"Sort...\n";
+        std::sort(candidate.begin(),candidate.end(),sortByMinPower(APid));
+        std::cout<<"Sort OK, now: ";
+        for(int i:candidate)std::cout<<i<<' '; std::cout<<"\n";
+        // fill in remaining seats by random sel
+        //1. shuffle from X+1 to |candidate|
+        if (paramX<0) {
+            std::cout<<"Something is wrong with param X: "<<paramX<<" Abort.\n";
+            exit(1);
+        }
+        std::random_shuffle(candidate.begin()+std::min(paramX,K), candidate.end());
+        std::cout<<"Shuffle OK\n";
+        //2. drop candidate items after K
+        candidate.erase(candidate.begin()+K, candidate.end());
+        std::cout<<"Erase OK\n";
+    }
+
+    return candidate;
+}
+
 /*---------scheduling----------------
 1. attempt to support K UEs via RA;
    - K=min(|remaining UE|, Gamma)
@@ -28,7 +73,7 @@ void prune(const int& APid){
 5. repeat from 1.
 -------------------------------------*/
 
-void node::tdma_scheduling(bool TDMAmode, bool RAmode){
+void node::tdma_scheduling(bool TDMAmode, bool RAmode, int paramX){
     this->servedUE_cnt = 0;
     std::list<std::list<int>> schedule;
 
@@ -48,13 +93,8 @@ void node::tdma_scheduling(bool TDMAmode, bool RAmode){
         /* rand select K UEs from pool */
         //std::cout<<"-- Selecting "<<K<<" UEs from pool { "; for(int i:pool) std::cout<<i<<' '; std::cout<<"}\n";
 
-        // copy pool into candidate
-        std::vector<int> candidate;
-        for(int i:pool)candidate.push_back(i);
-        // shuffle candidate
-        std::random_shuffle(candidate.begin(),candidate.end());
-        // drop candidate items after K
-        candidate.erase(candidate.begin()+K,candidate.end());
+        // determine candidate
+        std::vector<int> candidate = chooseCandidate(pool,K,this->id,TDMAmode,paramX);
         #ifdef DEBUG
         std::cout<<"-- Candidate: "; for(int i:candidate)std::cout<<i<<' '; std::cout<<'\n';
         #endif // DEBUG
@@ -143,12 +183,12 @@ void node::tdma_time_allocation(bool smartMode){
     }
 }
 
-void node::tdma(bool TDMAmode, bool RAmode){
+void node::tdma(bool TDMAmode, bool RAmode, int paramX){
     #ifdef DEBUG
     std::cout<<"\nTDMA for transmitter "<<this->id<<std::endl;
     #endif // DEBUG
 
-    this->tdma_scheduling(TDMAmode, RAmode);
+    this->tdma_scheduling(TDMAmode, RAmode, paramX);
 
     #ifdef DEBUG
     this->printme(2); // print schedule

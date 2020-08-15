@@ -147,7 +147,7 @@ double algorithm::fullAlgorithm(){
 
 //  -------------------TDMA----------------------
     for(node* n : node::transmitter){
-        n->tdma(algorithm::TDMAmode, algorithm::RAmode);
+        n->tdma(algorithm::TDMAmode, algorithm::RAmode,algorithm::paramX);
     }
 
     save_idleNode();

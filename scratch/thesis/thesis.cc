@@ -119,13 +119,14 @@ void openStream(std::ofstream& ofs, const std::string &filepath, const std::ofst
 }
 
 /*          init node static member       */
-int node::UE_number = 10; // default UE_number
+int node::UE_number = 50; // default UE_number
 node* node::transmitter[g_AP_number] = {0};
 node* node::receiver[g_UE_max] = {0};
 double node::channel[g_AP_number][g_UE_max] = {0};
 double node::SINR[g_AP_number][g_UE_max] = {0};
 /*         init algorithm static member         */
 bool algorithm::RBmode = false, algorithm::TDMAmode = false, algorithm::RAmode = false;
+int algorithm::paramX = g_param_X; // default paramX
 double algorithm::shannon = 0.0;
 
 int main(int argc, char *argv[]) {
@@ -143,14 +144,15 @@ int main(int argc, char *argv[]) {
 //	Config::SetDefault("ns3::TcpSocket::SndBufSize",UintegerValue(totalTxBytes));
 //	Config::SetDefault("ns3::TcpSocket::RcvBufSize",UintegerValue(totalTxBytes*2));
 
-	std::string RBmode, TDMAmode, RAmode="HR";
+	std::string RBmode, TDMAmode="GA", RAmode="HR";
 
 	CommandLine cmd;
 	cmd.AddValue("Var_name", "UE_number, AP_load, etc", varName); // used for making output filename
 	cmd.AddValue("UE_number", "Set UE_number for current iteration" ,node::UE_number);
-	cmd.AddValue("RB_mode", "Set RB_mode for current iteration", RBmode);
-	cmd.AddValue("TDMA_mode", "Set TDMA_mode for current iteration", TDMAmode);
-	cmd.AddValue("RA_mode", "Set RA_mode for current iteration", RAmode);
+	cmd.AddValue("paramX", "Set paramX for current iteration", algorithm::paramX);
+	cmd.AddValue("RB_mode", "Set RB_mode for current iteration (WGC/GC)", RBmode);
+	cmd.AddValue("TDMA_mode", "Set TDMA_mode for current iteration (GA/RND)", TDMAmode);
+	cmd.AddValue("RA_mode", "Set RA_mode for current iteration (HR/BP)", RAmode);
 	cmd.Parse(argc, argv);
 
 	std::string filepathprefix = "./log/"+varName+"-"+RBmode+"-"+TDMAmode+"-"+RAmode;

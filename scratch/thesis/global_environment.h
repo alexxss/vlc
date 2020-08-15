@@ -54,8 +54,9 @@ constexpr double g_bandwidth_per_rb = g_total_bandwidth / g_frequency_reuse_fact
                 TDMA CONSTANT
 maximum load per AP (Gamma)    2-5 step 1
 ---------------------------------------------------*/
-constexpr int g_maximum_load_per_AP = 3;
+constexpr int g_maximum_load_per_AP = 5;
 constexpr double g_total_time = 1.0; // unit is "second"
+constexpr int g_param_X = 1;
 
 /*---------------------------------------------------
               Resource Allocation CONSTANT

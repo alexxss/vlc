@@ -90,7 +90,7 @@ public:
     /**
     * \param bool mode=true use proposed,false use ref.
     */
-    void tdma(bool TDMAmode, bool RAmode);
+    void tdma(bool TDMAmode, bool RAmode, int paramX);
 
     /**
     * \brief calculate r of UE k using mod m on layer l
@@ -156,7 +156,7 @@ private:
     int servedUE_cnt;
     std::list<int> sorted_UE;
     std::list<double> time_allocation;
-    void tdma_scheduling(bool TDMAmode, bool RAmode); // mode=true: use proposed, mode=false: use ref
+    void tdma_scheduling(bool TDMAmode, bool RAmode, int paramX); // mode=true: use proposed, mode=false: use ref
     void tdma_time_allocation(bool smartMode);
     std::list<std::list<int>> time_slot_schedule;
     std::list<int> dynamic_resource_allocation(std::vector<int>& candidate);
