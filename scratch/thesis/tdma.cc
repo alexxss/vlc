@@ -3,6 +3,8 @@
 #include <list>
 #include <iostream>
 #include <algorithm> // random_shuffle
+#include <map>
+#include "algorithm.h"
 
 /** used to sort candidate in ASCENDING order of their NOMA order... */
 struct sortByMinPower{
@@ -83,7 +85,12 @@ void node::tdma_scheduling(bool TDMAmode, bool RAmode, int paramX){
 
     /* copy connected UEs into pool */
     std::list<int> pool;
-    for(int i : this->get_connected()) pool.push_back(i);
+    std::map<int,int> checked;
+    int checkedCount = 0;
+    for(int i : this->get_connected()) {
+        pool.push_back(i);
+        checked.insert(std::pair<int,bool>(i,0));
+    }
 
     //std::uniform_int_distribution<int> unif(0,pool.size());
 
@@ -106,15 +113,37 @@ void node::tdma_scheduling(bool TDMAmode, bool RAmode, int paramX){
         else
             accepted = this->dynamic_resource_allocation(candidate);
 
+        // mark candidates that have been checked
+        for(int i : candidate) {
+            if (checked[i]==0) {
+                checkedCount++;
+            }
+            checked[i]++;
+            if (checked[i]==3 && (find(accepted.begin(),accepted.end(),i) == accepted.end())){
+                std::cout<<"UE "<<i<<" selected third time and failed. Dropped from pool and AP.\n";
+                pool.remove(i);
+                this->dropRelationship(i);
+                node::transmitter[i]->dropRelationship(this->id);
+                algorithm::poolDropTriggerCnt++;
+            }
+        }
+
         //std::cout<<"-- Accepted: "; for(int i:accepted)std::cout<<i<<' '; std::cout<<'\n';
 
         /* remove successful UE from pool */
-        if (accepted.empty()) break;
-        for(int i:accepted) pool.remove(i);
+        if (accepted.empty() && checkedCount==this->get_connected().size())
+            break;
+        else if (accepted.empty()){
+            std::cout<<"All failed but there are unchecked, continue...\n";
+            algorithm::tdmaOldBreakTriggerCnt++;
+        }
+        else if (!accepted.empty()){
+            for(int i:accepted) pool.remove(i);
 
-        /* store successful UE in this time slot */
-        schedule.push_back(accepted);
-        this->servedUE_cnt += accepted.size();
+            /* store successful UE in this time slot */
+            schedule.push_back(accepted);
+            this->servedUE_cnt += accepted.size();
+        }
     }
     this->time_slot_schedule = schedule;
     /* drop the UEs remaining in pool */
@@ -140,7 +169,7 @@ void node::tdma_time_allocation(bool smartMode){
                 #ifdef DEBUG
                 std::cout<<"There\'s no served UEs, but there is time slot? \n";
                 #endif // DEBUG
-                system("pause");
+                char c = getchar();
             }
             double t_g = g_total_time * slot.size() / this->servedUE_cnt;
             this->time_allocation.push_back(t_g);

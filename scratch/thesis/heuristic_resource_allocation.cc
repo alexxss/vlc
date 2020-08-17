@@ -420,7 +420,8 @@ std::list<int> node::heuristic_resource_allocation(std::vector<int>& candidate){
 //        std::cout<<"] power="<<UEPowerMap[UEid]
 //                 <<", rate="<<UESumRateMap[UEid]<<'/'<<node::receiver[UEid]->min_required_rate<<'\n';
 //    }
-    if (prevUEsPower > g_P_max) system("pause");
+    if (prevUEsPower > g_P_max)
+        char c = getchar();
     // validity check
     double sumPowerCheck = 0.0;
     for (int UEid : candidate){

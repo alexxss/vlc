@@ -5,6 +5,8 @@
 #include "node.h"
 #include "resource_allocation.h"
 
+#ifndef ALGORITHM
+#define ALGORITHM
 class algorithm {
 public:
     /**
@@ -23,4 +25,8 @@ public:
     double fullAlgorithm();
 
     static double shannon;
+
+    static int poolDropTriggerCnt;
+    static int tdmaOldBreakTriggerCnt;
 };
+#endif
