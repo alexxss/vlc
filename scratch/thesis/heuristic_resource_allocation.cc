@@ -312,8 +312,8 @@ std::list<int> node::heuristic_resource_allocation(std::vector<int>& candidate){
         double myMinPower = minPower(this->id, UEid);
 //        std::cout<<"Minimum required power to serve UE "<<UEid<<" is "<< myMinPower <<'\n';
         if (myMinPower > g_P_max) {
-            std::cout<<"Something is wrong.\n";
-            exit(1);
+            std::cout<<"myMinPower > g_P_max... Something is wrong.\n";
+//            exit(1);
         }
         minPowerMap.insert({UEid,myMinPower});
         minPowerTotal += myMinPower;

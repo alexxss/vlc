@@ -128,6 +128,7 @@ double node::SINR[g_AP_number][g_UE_max] = {0};
 bool algorithm::RBmode = false, algorithm::TDMAmode = false, algorithm::RAmode = false;
 int algorithm::paramX = g_param_X; // default paramX
 double algorithm::shannon = 0.0;
+int algorithm::pruneCnt = 0;
 
 int main(int argc, char *argv[]) {
 	// Users may find it convenient to turn on explicit debugging
@@ -144,7 +145,7 @@ int main(int argc, char *argv[]) {
 //	Config::SetDefault("ns3::TcpSocket::SndBufSize",UintegerValue(totalTxBytes));
 //	Config::SetDefault("ns3::TcpSocket::RcvBufSize",UintegerValue(totalTxBytes*2));
 
-	std::string RBmode, TDMAmode="GA", RAmode="HR";
+	std::string RBmode="WGC", TDMAmode="GA", RAmode="HR";
 
 	CommandLine cmd;
 	cmd.AddValue("Var_name", "UE_number, AP_load, etc", varName); // used for making output filename
@@ -215,17 +216,22 @@ int main(int argc, char *argv[]) {
                 openStream(dropRateOfs, filepathprefix+"_dropRate.csv", std::ofstream::app);;
                 dropRateOfs<<", "<<node::UE_number-activeUE;
                 dropRateOfs.close();
-		// power
-		double sumPower = 0.0;
-		for(int iAP = 0; iAP<g_AP_number; iAP++){
-		    for(int UEid : node::transmitter[iAP]->get_connected()){
-			sumPower += node::transmitter[iAP]->getRequiredPower(UEid);
-		    }
-		}
-  	        std::ofstream powerOfs;
-		openStream(powerOfs, filepathprefix+"_power.csv", std::ofstream::app);
-		powerOfs<<", "<<sumPower;
-		powerOfs.close();
+                // power
+                double sumPower = 0.0;
+                for(int iAP = 0; iAP<g_AP_number; iAP++){
+                    for(int UEid : node::transmitter[iAP]->get_connected()){
+                    sumPower += node::transmitter[iAP]->getRequiredPower(UEid);
+                    }
+                }
+                std::ofstream powerOfs;
+                openStream(powerOfs, filepathprefix+"_power.csv", std::ofstream::app);
+                powerOfs<<", "<<sumPower;
+                powerOfs.close();
+                // pruneCnt
+                std::ofstream pruneCntOfs;
+                openStream(pruneCntOfs, filepathprefix+"_pruneCnt.csv", std::ofstream::app);
+                pruneCntOfs<<", "<<algorithm::pruneCnt;
+                pruneCntOfs.close();
             }
 
             // Here, we will explicitly create three nodes.  The first container contains

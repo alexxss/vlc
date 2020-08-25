@@ -3,6 +3,7 @@
 #include <list>
 #include <iostream>
 #include <algorithm> // random_shuffle
+#include "algorithm.h"
 
 /** used to sort candidate in ASCENDING order of their NOMA order... */
 struct sortByMinPower{
@@ -22,6 +23,7 @@ void prune(const int& APid){
         if (minPower(APid,UEid) > g_P_max){
             node::transmitter[APid]->dropRelationship(UEid);
             node::receiver[UEid]->dropRelationship(APid);
+            algorithm::pruneCnt ++;
             #ifdef DEBUG
             std::cout<<", UE "<<UEid<<" dropped from AP "<<APid<<"\'s cluster.\n";
             #endif // DEBUG

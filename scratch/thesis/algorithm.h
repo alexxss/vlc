@@ -1,3 +1,6 @@
+#ifndef ALGORITHM
+#define ALGORITHM
+
 #include "channel.h"
 #include "clustering.h"
 #include "frequencyreuse.h"
@@ -23,4 +26,7 @@ public:
     double fullAlgorithm();
 
     static double shannon;
+
+    static int pruneCnt;
 };
+#endif // ALGORITHM
