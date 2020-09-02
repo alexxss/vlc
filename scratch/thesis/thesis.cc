@@ -194,6 +194,8 @@ int main(int argc, char *argv[]) {
                 shannonOfs<<", "<<algorithm::shannon;
                 shannonOfs.close();
                 // ave connected APs per active UE
+                // blockedBandwidth
+                double blockedBandwidth = 0.0;
                 int activeUE = 0, connections = 0;
                 for(node* nUE : node::receiver)
                     if (!nUE) break;
@@ -201,6 +203,8 @@ int main(int argc, char *argv[]) {
                         if (nUE->getOnOff()){
                             activeUE ++;
                             connections += nUE->get_connected().size();
+                        } else {
+                            blockedBandwidth += nUE->min_required_rate;
                         }
                     }
                 if (activeUE>node::UE_number) {
@@ -212,6 +216,10 @@ int main(int argc, char *argv[]) {
                 openStream(aveConnNumOfs, filepathprefix+"_aveConnNum.csv", std::ofstream::app);
                 aveConnNumOfs<<", "<<aveConnNum;
                 aveConnNumOfs.close();
+                std::ofstream blockedBandwidthOfs;
+                openStream(blockedBandwidthOfs, filepathprefix+"_blockedBandwidth.csv", std::ofstream::app);
+                blockedBandwidthOfs<<", "<<blockedBandwidth;
+                blockedBandwidthOfs.close();
                 // drop rate
                 std::ofstream dropRateOfs;
                 openStream(dropRateOfs, filepathprefix+"_dropRate.csv", std::ofstream::app);;

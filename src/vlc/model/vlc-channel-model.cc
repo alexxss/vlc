@@ -244,14 +244,14 @@ void VlcChannel::TransmitDataPacket(Ptr<Packet> p) {
 	double packetErrorRate = 1.0 - std::pow((1 - erRate), size);
 
 	std::ofstream pers;
-	pers.open("packetErrorRateFile.txt", std::ios_base::app);
-	pers << "\t" << packetErrorRate << std::endl;
+//	pers.open("packetErrorRateFile.txt", std::ios_base::app);
+//	pers << "\t" << packetErrorRate << std::endl;
 //	std::cout << "\t" << packetErrorRate << std::endl;
 	//bool isCorrupt = rxErrorModel->CorruptPacket(p, erRate);
 	bool isCorrupt = rxErrorModel->CorruptPacket(p, erRate);
 	//std::cout << packetErrorRate<< std::endl;
 	rx->EnqueueDataPacketAfterCorruption(p, isCorrupt);
-	pers.close();
+//	pers.close();
 
 //	TransmitStart(p, tx, Seconds(0.1));
 //    std::cout<<"AP "<<tx->GetNode()->GetId()<<" sending pkt "<<p->GetUid()<<" size " << p->GetSize()<<" at "<<Simulator::Now().GetSeconds()<<'\n';

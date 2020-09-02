@@ -46,9 +46,13 @@ std::vector<int> chooseCandidate(const std::list<int> &pool, const int &K, const
         for(int i:pool)candidate.push_back(i);
         // pick guaranteed admission
         //1. sort by channel gain
-        std::cout<<"Sort...\n";
-        std::sort(candidate.begin(),candidate.end(),sortByMinPower(APid));
-        std::cout<<"Sort OK, now: ";
+        #ifdef DEBUG
+            std::cout<<"Sort...\n";
+            std::sort(candidate.begin(),candidate.end(),sortByMinPower(APid));
+            std::cout<<"Sort OK, now: ";
+        #else
+             std::sort(candidate.begin(),candidate.end(),sortByMinPower(APid));
+        #endif
         for(int i:candidate)std::cout<<i<<' '; std::cout<<"\n";
         // fill in remaining seats by random sel
         //1. shuffle from X+1 to |candidate|
@@ -57,10 +61,15 @@ std::vector<int> chooseCandidate(const std::list<int> &pool, const int &K, const
             exit(1);
         }
         std::random_shuffle(candidate.begin()+std::min(paramX,K), candidate.end());
-        std::cout<<"Shuffle OK\n";
+        #ifdef DEBUG
+            std::cout<<"Shuffle OK\n";
+        #endif // DEBUG
+
         //2. drop candidate items after K
         candidate.erase(candidate.begin()+K, candidate.end());
-        std::cout<<"Erase OK\n";
+        #ifdef DEBUG
+            std::cout<<"Erase OK\n";
+        #endif // DEBUG
     }
 
     return candidate;
@@ -102,9 +111,8 @@ void node::tdma_scheduling(bool TDMAmode, bool RAmode, int paramX){
 
         // determine candidate
         std::vector<int> candidate = chooseCandidate(pool,K,this->id,TDMAmode,paramX);
-        #ifdef DEBUG
+
         std::cout<<"-- Candidate: "; for(int i:candidate)std::cout<<i<<' '; std::cout<<'\n';
-        #endif // DEBUG
 
         /* try to RA */
         std::list<int> accepted;
@@ -219,13 +227,13 @@ void node::tdma(bool TDMAmode, bool RAmode, int paramX){
 
     this->tdma_scheduling(TDMAmode, RAmode, paramX);
 
-    #ifdef DEBUG
+//    #ifdef DEBUG
     this->printme(2); // print schedule
-    #endif
+//    #endif
 
     this->tdma_time_allocation(true);
 
-    #ifdef DEBUG
+//    #ifdef DEBUG
     this->printme(3); // print allocated time resource
-    #endif // DEBUG
+//    #endif // DEBUG
 }
