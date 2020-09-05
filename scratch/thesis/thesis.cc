@@ -128,6 +128,7 @@ double node::SINR[g_AP_number][g_UE_max] = {0};
 bool algorithm::RBmode = false, algorithm::TDMAmode = false, algorithm::RAmode = false;
 int algorithm::paramX = g_param_X; // default paramX
 double algorithm::shannon = 0.0;
+double algorithm::pruneCnt = 0.0;
 int algorithm::poolDropTriggerCnt = 0;
 int algorithm::tdmaOldBreakTriggerCnt = 0;
 
@@ -195,14 +196,14 @@ int main(int argc, char *argv[]) {
                 shannonOfs.close();
                 // ave connected APs per active UE
                 // blockedBandwidth
-                double blockedBandwidth = 0.0;
-                int activeUE = 0, connections = 0;
+                double totalReqBandwidth = 0.0, blockedBandwidth = 0.0;
+                int activeUE = 0;
                 for(node* nUE : node::receiver)
                     if (!nUE) break;
                     else {
+                        totalReqBandwidth += nUE->min_required_rate;
                         if (nUE->getOnOff()){
                             activeUE ++;
-                            connections += nUE->get_connected().size();
                         } else {
                             blockedBandwidth += nUE->min_required_rate;
                         }
@@ -211,11 +212,10 @@ int main(int argc, char *argv[]) {
                     std::cout<<"ACTIVE UE > UE NUMBER! something is wrong. abort.\n";
                     exit(1);
                 }
-                double aveConnNum = (activeUE>0) ? (double)connections/activeUE : 0.0;
-                std::ofstream aveConnNumOfs;
-                openStream(aveConnNumOfs, filepathprefix+"_aveConnNum.csv", std::ofstream::app);
-                aveConnNumOfs<<", "<<aveConnNum;
-                aveConnNumOfs.close();
+                std::ofstream totalReqBWOfs;
+                openStream(totalReqBWOfs, filepathprefix+"_totalReqBandwidth.csv", std::ofstream::app);
+                totalReqBWOfs<<", "<<totalReqBandwidth;
+                totalReqBWOfs.close();
                 std::ofstream blockedBandwidthOfs;
                 openStream(blockedBandwidthOfs, filepathprefix+"_blockedBandwidth.csv", std::ofstream::app);
                 blockedBandwidthOfs<<", "<<blockedBandwidth;
@@ -236,6 +236,11 @@ int main(int argc, char *argv[]) {
                 openStream(powerOfs, filepathprefix+"_power.csv", std::ofstream::app);
                 powerOfs<<", "<<sumPower;
                 powerOfs.close();
+                // pruneCnt
+                std::ofstream pruneCntOfs;
+                openStream(pruneCntOfs, filepathprefix+"_pruneCnt.csv", std::ofstream::app);
+                pruneCntOfs<<", "<<algorithm::pruneCnt/g_AP_number;
+                pruneCntOfs.close();
                 // three times drop trigger count
                 std::ofstream dropTriggerOfs;
                 openStream(dropTriggerOfs, filepathprefix+"_dropTrigCnt.csv", std::ofstream::app);

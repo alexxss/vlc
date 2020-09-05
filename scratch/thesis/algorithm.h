@@ -26,6 +26,7 @@ public:
 
     static double shannon;
 
+    static double pruneCnt;
     static int poolDropTriggerCnt;
     static int tdmaOldBreakTriggerCnt;
 };

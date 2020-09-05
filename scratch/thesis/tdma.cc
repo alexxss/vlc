@@ -17,19 +17,22 @@ struct sortByMinPower{
     }
 };
 
-void prune(const int& APid){
+int prune(const int& APid){
     std::cout<<"Pruning AP "<<APid<<"...\n";
+    int pruned = 0;
     for(int UEid : node::transmitter[APid]->get_connected()){
         std::cout<<"Minimum required power to serve UE "<<UEid<<" is "<< minPower(APid,UEid)<<"\n";
         if (minPower(APid,UEid) > g_P_max){
             node::transmitter[APid]->dropRelationship(UEid);
             node::receiver[UEid]->dropRelationship(APid);
+            pruned ++;
             #ifdef DEBUG
             std::cout<<", UE "<<UEid<<" dropped from AP "<<APid<<"\'s cluster.\n";
             #endif // DEBUG
         }
     }
     std::cout<<"Done.\n";
+    return pruned;
 }
 
 std::vector<int> chooseCandidate(const std::list<int> &pool, const int &K, const int& APid, const bool TDMAmode, int paramX){
@@ -87,9 +90,10 @@ std::vector<int> chooseCandidate(const std::list<int> &pool, const int &K, const
 void node::tdma_scheduling(bool TDMAmode, bool RAmode, int paramX){
     this->servedUE_cnt = 0;
     std::list<std::list<int>> schedule;
+    double pruned = 0.0;
 
     if (TDMAmode || RAmode) {
-        prune(this->id);
+        pruned = prune(this->id);
     }
 
     /* copy connected UEs into pool */
@@ -101,8 +105,12 @@ void node::tdma_scheduling(bool TDMAmode, bool RAmode, int paramX){
         checked.insert(std::pair<int,bool>(i,0));
     }
 
-    //std::uniform_int_distribution<int> unif(0,pool.size());
+    // update algorithm::pruneCount
+    if (pool.size()>0) algorithm::pruneCnt += (pruned/pool.size());
 
+    //std::uniform_int_distribution<int> unif(0,pool.size());
+    const int iniPoolSize = pool.size(); // for the calculation of 誤判
+    std::list<int> origDrop; // list of UEs that would have been dropped by orig breakpoint
     while(!pool.empty()){
         int K = pool.size() < g_maximum_load_per_AP ? pool.size() : g_maximum_load_per_AP;
 
@@ -139,14 +147,27 @@ void node::tdma_scheduling(bool TDMAmode, bool RAmode, int paramX){
         //std::cout<<"-- Accepted: "; for(int i:accepted)std::cout<<i<<' '; std::cout<<'\n';
 
         /* remove successful UE from pool */
-        if (accepted.empty() && checkedCount==this->get_connected().size())
+        if (accepted.empty() && checkedCount==iniPoolSize) // all failed, everyone has been checked before
             break;
         else if (accepted.empty()){
             std::cout<<"All failed but there are unchecked, continue...\n";
-            algorithm::tdmaOldBreakTriggerCnt++;
+//            algorithm::tdmaOldBreakTriggerCnt++;
+            // 判斷是不是第一次呼叫oldBreakpoint
+            if (origDrop.size()==0 && pool.size()>0){
+                // 記下原本會被drop的名單
+                origDrop.insert(origDrop.end(),pool.begin(), pool.end());
+//                origDrop.insert(origDrop.end(),candidate.begin(),candidate.end());
+                std::cout<<"Would have been dropped: ";
+                for (int i:origDrop) std::cout<<i<<" ";
+                std::cout<<'\n';
+            }
         }
         else if (!accepted.empty()){
-            for(int i:accepted) pool.remove(i);
+            for(int i:accepted) {
+                pool.remove(i);
+                if (find(origDrop.begin(),origDrop.end(),i)!=origDrop.end()) // acceptedUE is in origDrop = 發生誤判
+                    algorithm::tdmaOldBreakTriggerCnt ++;
+            }
 
             /* store successful UE in this time slot */
             schedule.push_back(accepted);
@@ -162,6 +183,9 @@ void node::tdma_scheduling(bool TDMAmode, bool RAmode, int paramX){
         std::cout<<"UE "<<UE_id<<" dropped from AP "<<this->id<<"\'s cluster.\n";
         #endif // DEBUG
     }
+    std::cout<<"-> Would have been dropped: ";
+    for (int i:origDrop) std::cout<<i<<" ";
+    std::cout<<'\n';
 }
 
 /*-----------time ra-----------------
