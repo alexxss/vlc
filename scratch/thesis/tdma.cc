@@ -93,7 +93,8 @@ void node::tdma_scheduling(bool TDMAmode, bool RAmode, int paramX){
     double pruned = 0.0;
 
     if (TDMAmode || RAmode) {
-        pruned = prune(this->id);
+	    //      NO PRUNING
+//      pruned = prune(this->id);
     }
 
     /* copy connected UEs into pool */
@@ -106,7 +107,8 @@ void node::tdma_scheduling(bool TDMAmode, bool RAmode, int paramX){
     }
 
     // update algorithm::pruneCount
-    if (pool.size()>0) algorithm::pruneCnt += (pruned/pool.size());
+    //  NO PRUNING //
+//  if (pool.size()>0) algorithm::pruneCnt += (pruned/pool.size());
 
     //std::uniform_int_distribution<int> unif(0,pool.size());
     const int iniPoolSize = pool.size(); // for the calculation of 誤判
