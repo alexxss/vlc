@@ -56,7 +56,8 @@ std::vector<int> chooseCandidate(const std::list<int> &pool, const int &K, const
         #else
              std::sort(candidate.begin(),candidate.end(),sortByMinPower(APid));
         #endif
-        for(int i:candidate)std::cout<<i<<' '; std::cout<<"\n";
+        for(int i:candidate)std::cout<<i<<' ';
+            std::cout<<"\n";
         // fill in remaining seats by random sel
         //1. shuffle from X+1 to |candidate|
         if (paramX<0) {
@@ -140,9 +141,13 @@ void node::tdma_scheduling(bool TDMAmode, bool RAmode, int paramX){
             if (checked[i]==3 && (find(accepted.begin(),accepted.end(),i) == accepted.end())){
                 std::cout<<"UE "<<i<<" selected third time and failed. Dropped from pool and AP.\n";
                 pool.remove(i);
+                std::cout<<"Removed from pool. \n";
                 this->dropRelationship(i);
-                node::transmitter[i]->dropRelationship(this->id);
+                std::cout<<"Dropped from AP. \n";
+                node::receiver[i]->dropRelationship(this->id);
+                std::cout<<"AP dropped from UE. \n";
                 algorithm::poolDropTriggerCnt++;
+                std::cout<<"manual breakpoint lmao\n";
             }
         }
 
@@ -203,7 +208,7 @@ void node::tdma_time_allocation(bool smartMode){
                 #ifdef DEBUG
                 std::cout<<"There\'s no served UEs, but there is time slot? \n";
                 #endif // DEBUG
-                char c = getchar();
+                getchar();
             }
             double t_g = g_total_time * slot.size() / this->servedUE_cnt;
             this->time_allocation.push_back(t_g);

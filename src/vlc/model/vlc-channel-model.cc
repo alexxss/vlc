@@ -241,9 +241,9 @@ void VlcChannel::TransmitDataPacket(Ptr<Packet> p) {
 //	double erRate = rxErrorModel->CalculateErrorRate();
     double erRate = 0.00001;
 	int size = p->GetSize();
-	double packetErrorRate = 1.0 - std::pow((1 - erRate), size);
+//	double packetErrorRate = 1.0 - std::pow((1 - erRate), size);
 
-	std::ofstream pers;
+//	std::ofstream pers;
 //	pers.open("packetErrorRateFile.txt", std::ios_base::app);
 //	pers << "\t" << packetErrorRate << std::endl;
 //	std::cout << "\t" << packetErrorRate << std::endl;

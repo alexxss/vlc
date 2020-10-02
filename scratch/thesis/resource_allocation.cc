@@ -258,7 +258,7 @@ mod_scheme_combi node::ra_second_tier(const std::list<std::pair<int, std::list<m
         mod_combi_each_constraint_up_to_prev_UE[i-1] = new mod_scheme_combi;
     }
 
-    std::chrono::steady_clock::time_point beginTime = std::chrono::steady_clock::now();
+//    std::chrono::steady_clock::time_point beginTime = std::chrono::steady_clock::now();
     /* from UE 1 to K, determine mod scheme selection for each power constraint */
     for(std::pair<int, std::list<mod_scheme*>> candidate_scheme_set : all_candidate_mod_scheme_set){
         #ifdef DEBUG
@@ -367,9 +367,9 @@ mod_scheme_combi node::ra_second_tier(const std::list<std::pair<int, std::list<m
     }
     //delete[] mod_combi_each_constraint_up_to_prev_UE;
 
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+//    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     #ifdef DEBUG
-    std::cout<<"complete. "<< "Time taken = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - beginTime).count() << "ms\n";
+//    std::cout<<"complete. "<< "Time taken = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - beginTime).count() << "ms\n";
     #else
 //    std::cout<<"Second tier complete. Time taken = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "ms\n";
     #endif // DEBUG

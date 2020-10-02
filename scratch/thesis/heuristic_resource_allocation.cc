@@ -353,9 +353,9 @@ std::list<int> node::heuristic_resource_allocation(std::vector<int>& candidate){
     std::cout<<"----------- Power Allocation ----------\n";
     if (unsatisfiedUE>0){
         prevUEsPower = 0.0;
-        for(int i=0; i<candidate.size(); i++){
+        for(unsigned int i=0; i<candidate.size(); i++){
             int UEid = candidate[i];
-//            std::cout<<"Checking UE "<<UEid<<", current leftover "<< leftover<<'\n';
+            std::cout<<"Checking UE "<<UEid<<", current leftover "<< leftover<<'\n';
             if (UESumRateMap[UEid]<node::receiver[UEid]->min_required_rate){ // found unsatisfied UE
                 /*-- temporarily store old configuration, in case need to revert ---*/
                 double oldLeftover = leftover;
@@ -369,21 +369,21 @@ std::list<int> node::heuristic_resource_allocation(std::vector<int>& candidate){
                 bool revertFlag = false;
                 double myPower = mod_mode_assignment(this->id, UEid, prevUEsPower, leftover, UEPowerMap, UEmodSchMap, UESumRateMap);
                 if (UESumRateMap[UEid]<node::receiver[UEid]->min_required_rate){
-//                    std::cout<<UEid<<" still can't be supported. Reverting...\n";
+                    std::cout<<UEid<<" still can't be supported. Reverting...\n";
                     revertFlag = true;
                 } else { // 1. ok, now check 2.
                     prevUEsPower += myPower;
                     leftover -= myPower;
-//                    std::cout<<UEid<<" got Rmin! Took "<<myPower<<" from leftover (now "<<leftover<<" ) Checking if UEs on top are ok with this...\n";
+                    std::cout<<UEid<<" got Rmin! Took "<<myPower<<" from leftover (now "<<leftover<<" ) Checking if UEs on top are ok with this...\n";
                     double prevUEsPowerCheck = prevUEsPower; // don't touch the actual prevPower record
-                    for (int j=i+1; j<candidate.size(); j++){
+                    for (unsigned int j=i+1; j<candidate.size(); j++){
                         int UEj = candidate[j];
                         // pre-calculate, this SHOULD NOT and DOES NOT change anything!
                         double UEj_newPower = required_power(this->id, UEj, prevUEsPowerCheck, UEmodSchMap[UEj]);
-//                        std::cout<<UEj<<" now needs "<<UEj_newPower<<'\n';
+                        std::cout<<UEj<<" now needs "<<UEj_newPower<<'\n';
                         if ((UEj_newPower - UEPowerMap[UEj]) > leftover) {
                             ////////BAD!! REVERT /////////////
-//                            std::cout<<"Leftover cannot afford. Reverting...\n";
+                            std::cout<<"Leftover cannot afford. Reverting...\n";
                             revertFlag = true;
                             break;
                         } else {
@@ -392,7 +392,7 @@ std::list<int> node::heuristic_resource_allocation(std::vector<int>& candidate){
                             leftover -= UEj_newPower-UEPowerMap[UEj];
                             UEPowerMap[UEj] = UEj_newPower;
                             prevUEsPowerCheck += UEj_newPower;
-//                            std::cout<<"Leftover is enough for this change.\n Remaining leftover "<< leftover-(UEj_newPower-UEPowerMap[UEj])<<'\n';
+                            std::cout<<"Leftover is enough for this change.\n Remaining leftover "<< leftover-(UEj_newPower-UEPowerMap[UEj])<<'\n';
                         }
                     }
                 }
@@ -404,7 +404,7 @@ std::list<int> node::heuristic_resource_allocation(std::vector<int>& candidate){
                     prevUEsPower = oldPrevUEsPower;
                 } else { // this UE can take new power alloc from leftover! keep this configuration
                     unsatisfiedUE--;
-                    if (unsatisfiedUE=0) break;
+                    if (unsatisfiedUE==0) break;
                 }
 
             } else {
@@ -421,7 +421,7 @@ std::list<int> node::heuristic_resource_allocation(std::vector<int>& candidate){
 //                 <<", rate="<<UESumRateMap[UEid]<<'/'<<node::receiver[UEid]->min_required_rate<<'\n';
 //    }
     if (prevUEsPower > g_P_max)
-        char c = getchar();
+        getchar();
     // validity check
     double sumPowerCheck = 0.0;
     for (int UEid : candidate){
@@ -432,8 +432,8 @@ std::list<int> node::heuristic_resource_allocation(std::vector<int>& candidate){
         sumPowerCheck += UEPowerMap[UEid];
     }
     if (sumPowerCheck > prevUEsPower){
-        std::cout<<"sumPowerCheck > prevUEsPower???\n";
-        exit(1);
+        std::cout<<"sumPowerCheck "<<sumPowerCheck<<" > prevUEsPower "<<prevUEsPower<<" ??? <Enter> to continue...\n";
+//        getchar();
     }
     if (sumPowerCheck > g_P_max){
         std::cout<<"sumPowerCheck > g_P_max???\n";

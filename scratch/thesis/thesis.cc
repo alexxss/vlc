@@ -93,17 +93,17 @@ static void RxEnd(Ptr<const Packet> p) { // used for tracing and calculating thr
 	iTime = Simulator::Now().GetSeconds();
 }
 
-static void TxEnd(Ptr<const Packet> p) { // also used as a trace and for calculating throughput
+//static void TxEnd(Ptr<const Packet> p) { // also used as a trace and for calculating throughput
+//
+////	std::cout<<"Transmit packet "<<p->GetUid()<<" size "<<p->GetSize()<<" at "<<Simulator::Now().GetSeconds()<<'\n';
+//	Sent.push_back(Sent.back() + p->GetSize()); // same as for the RxEnd trace
+////	theTime.push_back(Simulator::Now().GetSeconds()); 	//
+//	//NS_LOG_UNCOND("helooooooooooooooooo TxEnd");
+//}
 
-//	std::cout<<"Transmit packet "<<p->GetUid()<<" size "<<p->GetSize()<<" at "<<Simulator::Now().GetSeconds()<<'\n';
-	Sent.push_back(Sent.back() + p->GetSize()); // same as for the RxEnd trace
-//	theTime.push_back(Simulator::Now().GetSeconds()); 	//
-	//NS_LOG_UNCOND("helooooooooooooooooo TxEnd");
-}
-
-static void CwndTracer(uint32_t oldval, uint32_t newval) {
-	NS_LOG_INFO("Moving cwnd from " << oldval << " to " << newval);
-}
+//static void CwndTracer(uint32_t oldval, uint32_t newval) {
+//	NS_LOG_INFO("Moving cwnd from " << oldval << " to " << newval);
+//}
 
 std::string makeName(const std::string& devType, const int& APid, const int& UEid){
     std::string DeviceName = devType + "-" + std::to_string(APid) + "-" + std::to_string(UEid);
@@ -119,7 +119,7 @@ void openStream(std::ofstream& ofs, const std::string &filepath, const std::ofst
 }
 
 /*          init node static member       */
-int node::UE_number = 50; // default UE_number
+int node::UE_number = 70; // default UE_number
 node* node::transmitter[g_AP_number] = {0};
 node* node::receiver[g_UE_max] = {0};
 double node::channel[g_AP_number][g_UE_max] = {0};
@@ -147,7 +147,7 @@ int main(int argc, char *argv[]) {
 //	Config::SetDefault("ns3::TcpSocket::SndBufSize",UintegerValue(totalTxBytes));
 //	Config::SetDefault("ns3::TcpSocket::RcvBufSize",UintegerValue(totalTxBytes*2));
 
-	std::string RBmode="GC", TDMAmode="GA", RAmode="BP";
+	std::string RBmode="GC", TDMAmode="GA", RAmode="HR";
 
 	CommandLine cmd;
 	cmd.AddValue("Var_name", "UE_number, AP_load, etc", varName); // used for making output filename
@@ -374,7 +374,7 @@ int main(int argc, char *argv[]) {
                 apps.Add(sink.Install(UEcluster[APn]));
 
                 /*--- setup socket (to send data???) ---*/
-                for(int i = 1; i<ipInterfs.GetN(); i+=2){
+                for(unsigned int i = 1; i<ipInterfs.GetN(); i+=2){
 //                    std::cout<<"Schedule AP "<<APn<<" ("<<ipInterfs.GetAddress(i-1)<<") with addr "<<ipInterfs.GetAddress(i)<<'\n';
                     Ptr < Socket > localSocket = Socket::CreateSocket(allAP.Get(APn), TcpSocketFactory::GetTypeId());
                     localSocket->Bind();
