@@ -116,6 +116,7 @@ int node::get_resource_block(){
 */
 void node::dropRelationship(const int& nodeId)
 {
+    std::cout<<nodeId<<" removed from "<<this->id<<"\n";
     this->connected.remove(nodeId);
     if (this->connected.size()==0)
         this->OnOff = false;
