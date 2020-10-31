@@ -1,12 +1,14 @@
-# About
-This project is based on [Aldalbahias\/VLC-ns3-v3.25](https://github.com/Aldalbahias/VLC-ns3-v3.25).\
+About
+===
+This project is based on [Aldalbahias/VLC-ns3-v3.25](https://github.com/Aldalbahias/VLC-ns3-v3.25).
 
 ## Simulation
-Algorithm is based on [alexxss/thesis-simulation](https://github.com/alexxss/thesis-simulation) which is an implementaion of *S. Feng, et al,* "Multiple Access Design for Ultra-Dense VLC Networks: Orthogonal vs Non-Orthogonal," *IEEE Transactions on Communications*, Vol. 67, No. 3, pp. 2218-2231, Mar. 2019.  
-Algorithm code has been modified since last commit in the above repo.  
+Algorithm is based on *S. Feng, et al,* "Multiple Access Design for Ultra-Dense VLC Networks: Orthogonal vs Non-Orthogonal," *IEEE Transactions on Communications*, Vol. 67, No. 3, pp. 2218-2231, Mar. 2019.  
+
+Implementation of the above algorithm is in [this branch](https://github.com/alexxss/vlc/tree/Aldalbahias).
 
 ### Automation
-The script file `wafshellRun.sh` automatically repeats 20 iterations for increment of UE number from 10 to 70 (step size 10). To use the script file, under the `ns-3.25` directory, do the following:  
+The script file `wafshellRun.sh` automatically repeats the simulation for a given number of iterations, while incrementing the variables in a predefined manner. To use the script file, under the `ns-3.25` directory, do the following:  
 ```bash
 $ ./waf shell # you will now enter waf's shell
 $ ./wafshellRun.sh
@@ -15,11 +17,20 @@ Outputs will be in `ns-3.25/log` and `ns-3.25/log/RA`, be sure that these direct
 output file names: `<varName>-<RBmode>-<TDMAmode>-<RAmode>_<metric>.csv`  
 example: `UE_number-WGC-GA-HR_time.csv`  
 
-> TODO: support automation of other variables such as AP load, RB number, etc.
+Another usage of `.wafshellRun.sh` is to specify algorithm modes through command line arguments. 
+
+```bash
+$ ./waf shell
+$ ./wafshellRun.sh WGC GA HR # run simulation in WGC-GA-HR mode
+$ ./wafshellRun.sh GC GA BP; ./wafshellRun.sh GC GA HR # run simulation in GC-GA-BP and GC-GA-HR mode in succession
+```
+
+
 
 ### Structure
-`./wafshellRun.sh` outputs results and logs to `ns-3.25/log`.  
-single iters built in codeblocks will output results and logs to `ns-3.25/build/log`. `debug` and `release` profiles have their own respective folder for `.so``.o` files etc.  
+`./wafshellRun.sh` outputs results and logs to subfolders in`ns-3.25/log`.  
+
+> Note to self: single iters built in codeblocks will output results and logs to `ns-3.25/build/log`. `debug` and `release` profiles have their own respective folder for `.so` `.o` files etc.  
 
 ## Tracing Support
 Below are general description of changes I made to support PCAP and ASCII tracing. See commit difference for details.
@@ -38,7 +49,7 @@ This method produces one file for every device on every node: `<filename-you-pro
     - \+ `chHelper.EnablePcapAll("tcp-large-transfer");`
 
 > [time=Aug 15, 2019]
- 
+
 ### ASCII Tracing Support
 This method only produces ONE `.tr` file for the whole simulation.
 - `vlc-channel-helper.h`
