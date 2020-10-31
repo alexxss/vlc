@@ -1,6 +1,3 @@
-#ifndef FREQUENCYREUSE
-#include "frequencyreuse.h"
-#endif // FREQUENCYREUSE
 
 #include<list>
 #include<fstream>
@@ -8,6 +5,7 @@
 #include<algorithm> // for sort
 #include<random> // for random.. duh
 #include<chrono> // seed
+#include "frequencyreuse.h"
 
 /**
 z[i][j] = true means AP i and AP j associate to at least one same UE.
@@ -46,7 +44,7 @@ void print(const std::list<fr_node*> graph_nodes){
 }
 
 /* save frequency reuse data to file */
-void save_fr_relationship(node* transmitter[]){
+void save_fr_relationship(){
     #ifdef DEBUG
     std::cout<<"Overlapping nodes relationship saved at FR_graph.dat\n";
     #endif // DEBUG
@@ -55,8 +53,8 @@ void save_fr_relationship(node* transmitter[]){
         for(int i=0;i<g_AP_number;i++){
             for(int j=i+1;j<g_AP_number;j++){
                 if (z[i][j]==false) continue;
-                fout<<transmitter[i]->location.first<<' '<<transmitter[i]->location.second<<std::endl;
-                fout<<transmitter[j]->location.first<<' '<<transmitter[j]->location.second<<std::endl<<std::endl;
+                fout<<node::transmitter[i]->location.first<<' '<<node::transmitter[i]->location.second<<std::endl;
+                fout<<node::transmitter[j]->location.first<<' '<<node::transmitter[j]->location.second<<std::endl<<std::endl;
             }
         }
         fout.close();
@@ -64,14 +62,14 @@ void save_fr_relationship(node* transmitter[]){
 }
 
 /* save RB assignment data to file */
-void save_RB_assignment(node* transmitter[g_AP_number]){
+void save_RB_assignment(){
     #ifdef DEBUG
     std::cout<<"Resource block assignment saved at RB_assignment.dat\n";
     #endif // DEBUG
     std::ofstream fout("./log/RB_assignment.dat");
     if(fout.is_open()){
         for(int i=0; i<g_AP_number; i++){
-            fout<<transmitter[i]->location.first<<' '<<transmitter[i]->location.second<<' '<<transmitter[i]->get_resource_block()<<std::endl;
+            fout<<node::transmitter[i]->location.first<<' '<<node::transmitter[i]->location.second<<' '<<node::transmitter[i]->get_resource_block()<<std::endl;
         }
         fout.close();
     }
@@ -88,6 +86,11 @@ void set_relationship_true(const std::list<int> &overlapped_APs){
             else z[i][j]=true;
         }
     }
+}
+
+/** WGC version */
+void construct_weighted_graph(){
+
 }
 
 void construct_graph(std::list<fr_node*> graph_nodes){
@@ -199,14 +202,14 @@ void frequency_reuse(node* transmitter[g_AP_number]){
 
     construct_graph(graph_nodes);
 
-    save_fr_relationship(transmitter);
+    save_fr_relationship();
 
     #ifdef DEBUG
     std::cout<<"Assign RB...\n";
     #endif // DEBUG
     assign_rb(graph_nodes);
 
-    save_RB_assignment(transmitter);
+    save_RB_assignment();
 
     for(fr_node* n : graph_nodes) delete n;
 }

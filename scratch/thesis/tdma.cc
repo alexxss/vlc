@@ -6,7 +6,8 @@
 #include <map>
 #include "algorithm.h"
 
-/** used to sort candidate in ASCENDING order of their NOMA order... */
+/** sort candidate in ASCENDING order of their minPower... */
+/*  used by chooseCandidate during GA */ 
 struct sortByMinPower{
     sortByMinPower(const int& AP_id){AP=node::transmitter[AP_id];};
     const node* AP;

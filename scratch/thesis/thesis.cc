@@ -119,7 +119,7 @@ void openStream(std::ofstream& ofs, const std::string &filepath, const std::ofst
 }
 
 /*          init node static member       */
-int node::UE_number = 70; // default UE_number
+int node::UE_number = 50; // default UE_number
 node* node::transmitter[g_AP_number] = {0};
 node* node::receiver[g_UE_max] = {0};
 double node::channel[g_AP_number][g_UE_max] = {0};

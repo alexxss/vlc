@@ -143,7 +143,10 @@ double algorithm::fullAlgorithm(){
     }
 
 //  ---------------FREQUENCY REUSE---------------
-    frequency_reuse(node::transmitter);
+    if (algorithm::RBmode)
+        weighted_frequency_reuse();
+    else
+        frequency_reuse(node::transmitter);
 
 //  -------------------TDMA----------------------
     for(node* n : node::transmitter){

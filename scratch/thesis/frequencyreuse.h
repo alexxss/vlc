@@ -1,9 +1,12 @@
+#ifndef FREQUENCYREUSE
 #define FREQUENCYREUSE
-#ifndef NODE
+
 #include "node.h"
-#endif // NODE
 
 #include<list>
+
+void save_fr_relationship();
+void save_RB_assignment();
 
 /*----------------------------------------
 1. make graph
@@ -21,3 +24,20 @@ struct fr_node{
 };
 
 void frequency_reuse(node* transmitter[g_AP_number]);
+
+struct weighted_frNode{
+    node* transmitter;
+    std::list<weighted_frNode*> neighbors;
+    int degree;
+    double weight;
+    weighted_frNode* importantNeighbor;
+
+    weighted_frNode(){
+        weight = 999999999;
+        degree = 0.0;
+        importantNeighbor = NULL;
+    }
+};
+
+void weighted_frequency_reuse();
+#endif // FREQUENCYREUSE
